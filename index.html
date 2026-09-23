@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>WOODWARD: DETROIT — Chapter 01</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ======================= GAME CANVAS ======================= -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ======================= ROTATE DEVICE HINT ======================= -->
+  <div id="rotate-hint" class="overlay hidden">
+    <div class="rotate-icon">⤵</div>
+    <p>For the best experience, rotate your device to landscape.</p>
+  </div>
+
+  <!-- ======================= HUD (top bar) ======================= -->
+  <div id="hud">
+    <div id="hud-title">
+      <span class="chapter">CHAPTER 01</span>
+      <span class="city-name">WOODWARD: DETROIT</span>
+    </div>
+    <button id="progress-toggle" aria-label="Show progress">DETROIT</button>
+  </div>
+
+  <!-- ======================= PROGRESS PANEL ======================= -->
+  <div id="progress-panel" class="panel hidden">
+    <h2>DETROIT</h2>
+    <ul id="progress-list">
+      <!-- populated by ProgressManager -->
+    </ul>
+    <button class="close-btn" data-close="progress-panel">CLOSE</button>
+  </div>
+
+  <!-- ======================= TOAST (unlock notifications) ======================= -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- ======================= DISCOVERY OVERLAY ======================= -->
+  <div id="discovery-overlay" class="overlay hidden">
+    <div class="discovery-panel">
+      <div class="discovery-kicker">DETROIT DISCOVERY</div>
+      <h1 id="discovery-title">LANDMARK NAME</h1>
+      <div id="discovery-meta"></div>
+      <div id="discovery-body"></div>
+      <div id="discovery-personal" class="personal-connection hidden">
+        <div class="personal-kicker">PERSONAL CONNECTION</div>
+        <p id="discovery-personal-text"></p>
+      </div>
+      <button id="discovery-continue" class="primary-btn">CONTINUE DRIVE</button>
+    </div>
+  </div>
+
+  <!-- ======================= RADIO PANEL ======================= -->
+  <div id="radio-panel" class="panel hidden">
+    <h2>RADIO</h2>
+    <div id="radio-station-name">ISLAND SPICE RADIO</div>
+    <div id="radio-status">Signal ready. Configure a stream source to go live.</div>
+    <button id="radio-play-btn">▶ TUNE IN</button>
+    <button class="close-btn" data-close="radio-panel">CLOSE</button>
+  </div>
+  <button id="radio-toggle" aria-label="Open radio">📻</button>
+
+  <!-- ======================= PERFORMANCE OVERLAY ======================= -->
+  <div id="performance-overlay" class="overlay hidden">
+    <div class="discovery-panel performance-panel">
+      <div class="discovery-kicker" id="performance-location">HART PLAZA</div>
+      <h1>LIVE PERFORMANCE</h1>
+      <p id="performance-copy">Detroit is listening.</p>
+      <button id="performance-btn" class="primary-btn">PERFORM</button>
+    </div>
+  </div>
+
+  <!-- ======================= MOBILE TOUCH CONTROLS ======================= -->
+  <div id="touch-controls">
+    <div class="touch-cluster left">
+      <button id="btn-left" class="touch-btn" aria-label="Steer left">◀</button>
+    </div>
+    <div class="touch-cluster right">
+      <button id="btn-brake" class="touch-btn brake" aria-label="Brake / Reverse">▼</button>
+      <button id="btn-accel" class="touch-btn accel" aria-label="Accelerate">▲</button>
+      <button id="btn-right" class="touch-btn" aria-label="Steer right">▶</button>
+    </div>
+  </div>
+
+  <!-- ======================= LOADING SCREEN ======================= -->
+  <div id="loading-screen">
+    <div class="loading-title">WOODWARD: DETROIT</div>
+    <div class="loading-sub">Loading Chapter 01 — The First Drive</div>
+  </div>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
