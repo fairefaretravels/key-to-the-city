@@ -20,22 +20,63 @@
   <!-- ======================= HUD (top bar) ======================= -->
   <div id="hud">
     <div id="hud-title">
-      <span class="chapter">CHAPTER 01</span>
-      <span class="city-name">WOODWARD: DETROIT</span>
+      <span class="chapter" id="hud-chapter">CHAPTER 01</span>
+      <span class="city-name" id="hud-city-name">WOODWARD: DETROIT</span>
     </div>
-    <button id="progress-toggle" aria-label="Show progress">DETROIT</button>
+    <div class="hud-right">
+      <div id="credits-chip">★ <span id="credits-count">0</span></div>
+      <button id="garage-toggle" aria-label="Open garage">🚗</button>
+      <button id="map-toggle" aria-label="Open map select">🗺</button>
+      <button id="progress-toggle" aria-label="Show progress">DETROIT</button>
+    </div>
   </div>
 
   <!-- ======================= PROGRESS PANEL ======================= -->
   <div id="progress-panel" class="panel hidden">
-    <h2>DETROIT</h2>
-    <ul id="progress-list">
-      <!-- populated by ProgressManager -->
-    </ul>
+    <h2>PROGRESS</h2>
+    <ul id="progress-list"><!-- populated by ProgressManager --></ul>
     <button class="close-btn" data-close="progress-panel">CLOSE</button>
   </div>
 
-  <!-- ======================= TOAST (unlock notifications) ======================= -->
+  <!-- ======================= CITY SELECT ======================= -->
+  <div id="city-select-overlay" class="overlay hidden">
+    <div class="discovery-panel city-select-panel">
+      <div class="discovery-kicker">CHOOSE YOUR MAP</div>
+      <h1>THE MOTOR CITY TOUR</h1>
+      <div id="city-select-list"><!-- populated by CityProgression --></div>
+      <button class="close-btn" data-close="city-select-overlay">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ======================= GARAGE / CUSTOMIZATION ======================= -->
+  <div id="garage-overlay" class="overlay hidden">
+    <div class="discovery-panel garage-panel">
+      <div class="discovery-kicker">GARAGE</div>
+      <h1>CUSTOMIZE YOUR RIDE</h1>
+
+      <div class="garage-section">
+        <div class="garage-label">VEHICLE TYPE</div>
+        <div id="vehicle-type-list" class="chip-row"><!-- populated by Garage --></div>
+      </div>
+
+      <div class="garage-section">
+        <div class="garage-label">PAINT</div>
+        <div id="vehicle-color-list" class="chip-row"><!-- populated by Garage --></div>
+      </div>
+
+      <div class="garage-section">
+        <div class="garage-label">LICENSE PLATE</div>
+        <div class="plate-row">
+          <div id="plate-preview" class="plate-preview">DETROIT</div>
+          <input id="plate-input" maxlength="8" placeholder="8 CHARS MAX" autocomplete="off" />
+        </div>
+      </div>
+
+      <button id="garage-save-btn" class="primary-btn">SAVE & CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ======================= TOAST ======================= -->
   <div id="toast" class="hidden"></div>
 
   <!-- ======================= DISCOVERY OVERLAY ======================= -->
@@ -49,6 +90,7 @@
         <div class="personal-kicker">PERSONAL CONNECTION</div>
         <p id="discovery-personal-text"></p>
       </div>
+      <div id="discovery-reward" class="discovery-reward"></div>
       <button id="discovery-continue" class="primary-btn">CONTINUE DRIVE</button>
     </div>
   </div>
@@ -57,23 +99,50 @@
   <div id="radio-panel" class="panel hidden">
     <h2>RADIO</h2>
     <div id="radio-station-name">ISLAND SPICE RADIO</div>
+    <div id="radio-now-playing"></div>
     <div id="radio-status">Signal ready. Configure a stream source to go live.</div>
     <button id="radio-play-btn">▶ TUNE IN</button>
+    <button id="radio-next-btn">⏭ NEXT TRACK</button>
     <button class="close-btn" data-close="radio-panel">CLOSE</button>
   </div>
   <button id="radio-toggle" aria-label="Open radio">📻</button>
 
-  <!-- ======================= PERFORMANCE OVERLAY ======================= -->
+  <!-- ======================= PERFORMANCE INTRO OVERLAY ======================= -->
   <div id="performance-overlay" class="overlay hidden">
     <div class="discovery-panel performance-panel">
       <div class="discovery-kicker" id="performance-location">HART PLAZA</div>
+      <div class="genre-badge" id="performance-genre">ROCK</div>
       <h1>LIVE PERFORMANCE</h1>
-      <p id="performance-copy">Detroit is listening.</p>
-      <button id="performance-btn" class="primary-btn">PERFORM</button>
+      <p id="performance-song"></p>
+      <p id="performance-copy">Detroit is listening. Hit the notes as they reach the line.</p>
+      <button id="performance-btn" class="primary-btn">START PERFORMANCE</button>
     </div>
   </div>
 
-  <!-- ======================= MOBILE TOUCH CONTROLS ======================= -->
+  <!-- ======================= QTE CONCERT OVERLAY ======================= -->
+  <div id="qte-overlay" class="hidden">
+    <div id="qte-topbar">
+      <div id="qte-song-title"></div>
+      <div id="qte-score">SCORE <span id="qte-score-val">0</span></div>
+      <div id="qte-combo">COMBO <span id="qte-combo-val">0</span></div>
+    </div>
+    <div id="qte-judgment"></div>
+    <div id="qte-lanes"><!-- 4 lanes injected by PerformanceSystem --></div>
+    <div id="qte-hitline"></div>
+  </div>
+
+  <!-- ======================= PERFORMANCE RESULTS ======================= -->
+  <div id="results-overlay" class="overlay hidden">
+    <div class="discovery-panel results-panel">
+      <div class="discovery-kicker">PERFORMANCE COMPLETE</div>
+      <h1 id="results-rating">GREAT SHOW</h1>
+      <div id="results-breakdown"></div>
+      <div id="results-credits"></div>
+      <button id="results-continue" class="primary-btn">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ======================= MOBILE TOUCH CONTROLS (driving) ======================= -->
   <div id="touch-controls">
     <div class="touch-cluster left">
       <button id="btn-left" class="touch-btn" aria-label="Steer left">◀</button>
@@ -83,6 +152,14 @@
       <button id="btn-accel" class="touch-btn accel" aria-label="Accelerate">▲</button>
       <button id="btn-right" class="touch-btn" aria-label="Steer right">▶</button>
     </div>
+  </div>
+
+  <!-- ======================= QTE TOUCH LANES ======================= -->
+  <div id="qte-touch-lanes" class="hidden">
+    <button class="qte-touch-btn" data-lane="0"></button>
+    <button class="qte-touch-btn" data-lane="1"></button>
+    <button class="qte-touch-btn" data-lane="2"></button>
+    <button class="qte-touch-btn" data-lane="3"></button>
   </div>
 
   <!-- ======================= LOADING SCREEN ======================= -->

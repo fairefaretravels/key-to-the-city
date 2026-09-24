@@ -348,3 +348,258 @@ html, body {
 @media (orientation: portrait) and (max-width: 900px) {
   #rotate-hint.show-portrait { display: flex; }
 }
+
+/* ============================================================================
+   v0.2 ADDITIONS — HUD extras, city select, garage, QTE concert system
+============================================================================ */
+
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: all;
+}
+#credits-chip {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  backdrop-filter: blur(6px);
+}
+#garage-toggle, #map-toggle {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  font-size: 1rem;
+  backdrop-filter: blur(6px);
+}
+
+/* ===================== CITY SELECT ===================== */
+.city-select-panel { max-width: 520px; }
+#city-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+.city-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff08;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.city-card.locked { opacity: 0.55; }
+.city-card.active { border-color: var(--accent); }
+.city-card-name { font-weight: 700; letter-spacing: 0.04em; }
+.city-card-genre { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+.city-card-req { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+.city-card-btn {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.city-card.locked .city-card-btn {
+  background: transparent;
+  border-color: var(--panel-border);
+  color: var(--text-dim);
+}
+
+/* ===================== GARAGE ===================== */
+.garage-panel { max-width: 480px; }
+.garage-section { margin-bottom: 18px; }
+.garage-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn {
+  background: #ffffff0c;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+.chip-btn.selected { border-color: var(--accent); background: var(--accent-dim); }
+.color-chip {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-border);
+  padding: 0;
+}
+.color-chip.selected { border-color: var(--accent); }
+.plate-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.plate-preview {
+  background: #eae6d8;
+  color: #14171c;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 3px solid #14171c;
+  min-width: 120px;
+  text-align: center;
+}
+#plate-input {
+  flex: 1;
+  min-width: 140px;
+  background: #ffffff10;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===================== DISCOVERY REWARD / GENRE BADGE ===================== */
+.discovery-reward {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.genre-badge {
+  display: inline-block;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+#performance-song { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 6px; }
+
+/* ===================== QTE CONCERT ===================== */
+#qte-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: radial-gradient(circle at 50% 30%, #1a1e26, #05070a 75%);
+  display: flex;
+  flex-direction: column;
+}
+#qte-overlay.hidden { display: none; }
+#qte-topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 14px) 20px 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+#qte-song-title { color: var(--text); font-weight: 700; }
+#qte-score-val, #qte-combo-val { color: var(--accent); font-weight: 800; }
+#qte-judgment {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  height: 2.2rem;
+  margin-top: 6px;
+  color: var(--accent);
+  text-shadow: 0 0 12px currentColor;
+}
+#qte-lanes {
+  position: relative;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 3vw;
+  margin: 0 auto;
+  width: min(560px, 92vw);
+  overflow: hidden;
+}
+.qte-lane {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-left: 1px solid #ffffff14;
+  border-right: 1px solid #ffffff14;
+}
+.qte-lane-label {
+  position: absolute;
+  bottom: 14%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+.qte-note {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent-dim);
+}
+#qte-hitline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  height: 3px;
+  background: #ffffff55;
+  z-index: 5;
+  pointer-events: none;
+}
+#qte-touch-lanes {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 6%);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 92vw);
+  display: flex;
+  gap: 3vw;
+  z-index: 130;
+}
+#qte-touch-lanes.hidden { display: none; }
+.qte-touch-btn {
+  flex: 1;
+  height: 64px;
+  border-radius: 10px;
+  background: #ffffff10;
+  border: 1px solid #ffffff33;
+  -webkit-tap-highlight-color: transparent;
+}
+.qte-touch-btn:active { background: var(--accent-dim); border-color: var(--accent); }
+
+/* ===================== RESULTS ===================== */
+.results-panel { text-align: center; }
+#results-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 16px 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+#results-breakdown b { display: block; font-size: 1.2rem; color: var(--text); }
+#results-credits {
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 18px;
+}

@@ -1,117 +1,136 @@
-# WOODWARD: DETROIT — Chapter 01: The First Drive
+# WOODWARD: DETROIT — v0.2
 
-A browser-based, playable historical road trip through Detroit. This is the
-first vertical slice: **Woodward Ave → Penobscot Building → Hart Plaza →
-Concert**. It proves the core gameplay loop — drive, discover, learn,
-listen, perform, unlock — before any more of Detroit (or any other city)
-gets built out.
+A browser-based, playable historical road trip, now spanning multiple
+cities gated by an earned-credits progression system, with a genre-specific
+quick-time-event concert at each city's performance venue.
 
-This is **not** a racing game or a GTA clone. The city itself is the
-classroom.
+This is still not a racing game or a GTA clone. The city is the classroom;
+the concert is the reward for paying attention to it.
 
 ## Running it
 
-No build step, no server required for local testing:
+No build step required:
 
-1. Download/clone this folder.
-2. Open `index.html` in a modern desktop browser, **or**
-3. Push it to GitHub Pages / Vercel / Netlify as a static site and open the
-   deployed URL.
+1. Open `index.html` in a modern desktop browser, **or**
+2. Push the folder to GitHub Pages / Vercel / Netlify and open the deployed
+   URL.
 
-Everything (Three.js) loads from a CDN, so there's nothing to install.
+Three.js loads from a CDN — nothing to install locally.
 
 ## Controls
 
-**Desktop:** `W` / `↑` accelerate · `S` / `↓` brake-reverse · `A` / `←` steer
-left · `D` / `→` steer right.
+**Driving — Desktop:** `W`/`↑` accelerate · `S`/`↓` brake-reverse ·
+`A`/`←` steer left · `D`/`→` steer right.
+**Driving — Mobile:** large on-screen thumb buttons, bottom of screen.
 
-**Mobile:** Large on-screen thumb buttons (bottom of screen). Landscape
-orientation is recommended and prompted for automatically.
+**Concert (QTE) — Desktop:** `D` `F` `J` `K`, one key per lane, left to
+right.
+**Concert (QTE) — Mobile:** four large tap zones along the bottom of the
+screen, one per lane.
 
-## What's in this slice
+## What's new in v0.2
 
-- A placeholder 1973-Chevy-inspired vehicle with acceleration, braking,
-  reverse, steering, boundary collision, and a cinematic chase camera.
-- A procedurally-dressed Woodward Avenue corridor (road, sidewalks,
-  streetlights, placeholder buildings) — geometry, not final art.
-- The **Penobscot Building**, with a discovery zone that pauses the drive
-  and opens an information panel. Historical-fact copy is a clear
-  placeholder, structured so real research can be dropped in later.
-  Its personal-connection story (the creator worked in this building; a
-  WJLB radio connection) is kept in its own separate, clearly-labeled
-  section — never mixed into the historical record.
-- **Hart Plaza**, unlocked after the Penobscot discovery, which triggers a
-  concert unlock and a reusable performance/reward screen.
-- A visible Detroit progress tracker (Woodward / Penobscot / Hart Plaza /
-  Concert / City Key), persisted to `localStorage`.
-- The **architecture** for an in-game radio system with multiple stations
-  (Island Spice Radio, WJLB-inspired historical content, STV, H4H, Brass
-  Earthling) — station identities exist now, but no stream URLs are wired
-  up. Island Spice Radio's existing site
-  (https://islandspiceradio.github.io/isr/site/) was not touched or scraped;
-  only its name/link are referenced.
-- A `cityKey` data structure (`{ city: 'Detroit', unlocked: false }`) that
-  the full chapter will eventually flip to `true` once there are enough
-  discoveries, radio visits, and performances. It intentionally never
-  unlocks in this slice.
+### Multiple cities, gated by credits
+Detroit is always available. Atlanta, Chicago, and New York each require a
+credit threshold (250 / 500 / 800) earned from discoveries and concerts
+before they unlock. New Orleans is documented in the data but not yet
+built — see "How future work slots in" below for exactly what adding it
+takes. Tap the 🗺 button to open the map screen, see what's
+locked/unlocked, and switch cities once you've earned your way in.
+
+### NPCs, crowds, and traffic
+Pedestrians walk the sidewalks back and forth in every city; stationary
+crowds cluster around each performance venue. A handful of ambient traffic
+archetypes (sedan, pickup, van, compact) drive the opposite lane. All of it
+is placeholder geometry — capsules and boxes — meant to be swapped for real
+rigged models later without touching the placement/movement logic.
+
+### Lit buildings
+Every building along the corridor now gets a randomized grid of lit and
+dark windows per floor, on both street-facing sides, instead of a single
+flat emissive strip.
+
+### Concerts are now a real quick-time-event
+Reaching a performance venue drops you into a 4-lane rhythm minigame:
+notes fall toward a hit line, and you hit the matching lane/key as they
+arrive. Each city's genre changes which instrument each lane represents
+and the concert's color atmosphere:
+
+| City | Genre | Lanes |
+|---|---|---|
+| Detroit | Rock | Guitar / Bass / Drums / Vocals |
+| Chicago | Blues | Guitar / Harmonica / Bass / Drums |
+| Atlanta | Rap | Vocal / Beat / Scratch / Hype |
+| New York | Jazz | Sax / Piano / Bass / Drums |
+
+Scoring tracks Perfect/Good/Miss counts and a combo multiplier; a results
+screen rates the show (Rough Night → Legendary Set) and pays out credits
+toward unlocking the next city.
+
+**Important honesty note on audio:** I can't obtain music licensing or use
+real songs/artists on your behalf. The concert's note pattern is generated
+procedurally from each placeholder track's BPM (deterministic per song, so
+a given track always plays the same pattern), so the minigame is fully
+playable with zero audio dependency. When a real, licensed track is ready,
+its `audioUrl` slot (see the song library below) is exactly where it goes,
+and the note-generation function is the place to swap in a real beat map
+synced to that track's timeline instead of the procedural pattern.
+
+### A 30-plus-track song library, with weekly rotation
+`SONG_LIBRARY` in `main.js` holds 32 original, unlicensed placeholder
+tracks (8 per genre) so no single city loops the same 2-3 songs into the
+ground. `getWeeklyFeaturedTrack(genre)` picks a different track each
+calendar week using an ISO week-number index — a ready-made hook for
+dropping in new licensed songs on a weekly cadence once rights are secured;
+it requires no code changes beyond filling in `audioUrl` on new entries.
+
+### Garage: vehicle type, paint, and a custom license plate
+Tap the 🚗 button to open the garage: four vehicle silhouettes (muscle,
+pickup, lowrider, van), six paint colors, and a license-plate text field
+(8 characters, sanitized to letters/numbers/spaces). The plate is rendered
+onto a real canvas texture and mounted on the front and back of the car
+model, and everything is saved to `localStorage` so it persists between
+sessions.
 
 ## Project structure
 
 ```
 WOODWARD-DETROIT/
-  index.html      canvas + all UI overlays (HUD, discovery, radio, performance, touch controls)
+  index.html      canvas + every UI overlay (HUD, discovery, city select, garage, QTE concert, results)
   style.css       cinematic dark UI, mobile-first, safe-area aware
-  main.js         everything else — see the section map at the top of the file
+  main.js         everything else — 14 clearly-labeled sections, see the banner at the top of the file
   README.md       this file
-  /assets/
-    /cars/        future vehicle models
-    /buildings/   future landmark models
-    /detroit/     future city-specific geometry/textures
-    /music/       future station audio / performance assets
-    /ui/          future UI art
+  /assets/        placeholders for future models/audio/UI art (cars, buildings, detroit, music, ui)
 ```
-
-`main.js` is organized into 9 clearly-labeled sections (search for the
-`====` banners): **City Data, Save/Progress, Scene Setup, Vehicle, Input,
-Discovery System, Radio System, Performance System, Game Loop.** Nothing
-about the discovery, progress, or performance systems is Detroit-specific —
-they all read from the `currentCity` object, which is how new cities and
-new landmarks get added without touching the engine.
 
 ## How future work slots in
 
-**New landmarks in Detroit** — add an entry to
-`CITIES.detroit.landmarks`, and (if you want a custom model instead of the
-generic placeholder box) add a `buildX()` method next to `buildPenobscot()`
-/ `buildHartPlaza()` in `Scene3D`. The discovery system, progress tracker,
-and personal-connection separation all work automatically from the data.
+**Add New Orleans (or any new city)** — add a full entry to the `CITIES`
+object following the Atlanta/Chicago/New York pattern (`genre`,
+`unlockCost`, `palette`, `road`, `landmarks`, `radioStations`, `cityKey`),
+then add its id to `CITY_ORDER`. Everything else — NPCs, traffic, lit
+buildings, discovery, the QTE concert, credits — works automatically from
+that data.
 
-**New cities (Atlanta, New York, Chicago, New Orleans, ...)** — add a new
-key to the `CITIES` object with its own `start`, `road`, `landmarks`,
-`radioStations`, and `cityKey`. Swap `currentCity = CITIES.atlanta` (or
-build a city-select screen) and the rest of the engine — vehicle, input,
-discovery, radio, performance, camera — needs no changes.
+**More landmarks per city** — add entries to that city's `landmarks`
+array; give one `performanceLocation: true` to make it a concert venue.
 
-**Real radio streams** — set `streamUrl` on a station entry in
-`radioStations`; `RadioSystem.play()` already knows how to use it.
+**Real licensed songs** — add an entry to the right genre array in
+`SONG_LIBRARY` with a real `audioUrl`, or fill in the URL on an existing
+placeholder entry once you've cleared rights for that specific title.
 
-**Fox Theatre / other performance venues** — mark a landmark
-`performanceLocation: true` and it will automatically trigger
-`PerformanceSystem`, the same reusable concert flow Hart Plaza uses.
+**Real beat-synced QTE instead of procedural patterns** — replace the
+body of `PerformanceSystem.generatePattern()` with a beat map tied to the
+real track's timestamp, and swap the manual `requestAnimationFrame` clock
+for the `<audio>` element's own `currentTime`.
 
-**Walk mode (Fisher Building, etc.)** — the discovery system already
-separates "enter radius" from "what happens next"; a future landmark can
-set a flag like `mode: 'park-and-walk'` and branch in
-`DiscoverySystem.continueDrive()` without disturbing drive-by landmarks.
+**Rigged NPC/vehicle models** — swap the placeholder geometry inside
+`NPCSystem.buildPerson()` / `TrafficSystem.buildCar()` / `Vehicle.buildCarMesh()`
+for loaded GLTF models; the surrounding movement and placement code doesn't
+care what mesh it's animating.
 
-**Sourced historical research** — each landmark object already has slots
-for `historicalFacts`, `radioConnection`, and (separately)
-`personalConnection`. Replace the placeholder strings; nothing else needs
-to change.
+## Deliberately not included yet
 
-## Deliberately not included yet (per the v0.1 scope)
-
-No backend, no authentication, no multiplayer, no Firebase, no payments,
-no full concert/rhythm-game system, no final Key to Detroit award, and no
-exact-geography Woodward Avenue. All of that is future work once this
-loop is proven out.
+No backend, no authentication, no multiplayer, no real audio/licensing, no
+exact city geography, and New Orleans is data-only (not yet a playable
+map). All are natural next steps once this loop is validated.
