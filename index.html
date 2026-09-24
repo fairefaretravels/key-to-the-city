@@ -145,12 +145,22 @@
   <!-- ======================= MOBILE TOUCH CONTROLS (driving) ======================= -->
   <div id="touch-controls">
     <div class="touch-cluster left">
-      <button id="btn-left" class="touch-btn" aria-label="Steer left">◀</button>
+      <div id="steering-wheel-wrapper" role="slider" aria-label="Steering wheel" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0">
+        <svg id="steering-wheel" viewBox="0 0 200 200" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="86" fill="#0d1117aa" stroke="#ffffff22" stroke-width="2"/>
+          <circle cx="100" cy="100" r="82" fill="none" stroke="#ffffff33" stroke-width="14"/>
+          <circle cx="100" cy="100" r="82" fill="none" stroke="#d9a44177" stroke-width="2"/>
+          <line x1="100" y1="100" x2="100" y2="24" stroke="#ffffff55" stroke-width="9" stroke-linecap="round"/>
+          <line x1="100" y1="100" x2="34" y2="138" stroke="#ffffff55" stroke-width="9" stroke-linecap="round"/>
+          <line x1="100" y1="100" x2="166" y2="138" stroke="#ffffff55" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="100" cy="100" r="24" fill="#14171c" stroke="#d9a441" stroke-width="2"/>
+          <circle cx="100" cy="28" r="6" fill="#d9a441"/>
+        </svg>
+      </div>
     </div>
     <div class="touch-cluster right">
       <button id="btn-brake" class="touch-btn brake" aria-label="Brake / Reverse">▼</button>
       <button id="btn-accel" class="touch-btn accel" aria-label="Accelerate">▲</button>
-      <button id="btn-right" class="touch-btn" aria-label="Steer right">▶</button>
     </div>
   </div>
 

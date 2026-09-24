@@ -799,9 +799,15 @@ const Vehicle = {
     }
     this.speed = THREE.MathUtils.clamp(this.speed, this.reverseMaxSpeed, this.maxSpeed);
 
+    // Steering comes from Input.steering: a normalized value (-1 = full left,
+    // 0 = centered, 1 = full right) sourced from keyboard, the touch steering
+    // wheel, or a mouse dragging that wheel. The existing turn-rate physics
+    // below just consumes that value instead of discrete left/right flags.
+    const steering = THREE.MathUtils.clamp(input.steering || 0, -1, 1);
     const speedFactor = THREE.MathUtils.clamp(Math.abs(this.speed) / 6, 0.15, 1);
-    if (input.left) this.heading += this.turnRate * speedFactor * dt * (this.speed < 0 ? -1 : 1);
-    if (input.right) this.heading -= this.turnRate * speedFactor * dt * (this.speed < 0 ? -1 : 1);
+    if (steering !== 0) {
+      this.heading -= steering * this.turnRate * speedFactor * dt * (this.speed < 0 ? -1 : 1);
+    }
 
     this.position.x += Math.sin(this.heading) * this.speed * dt;
     this.position.z += Math.cos(this.heading) * this.speed * dt;
@@ -825,16 +831,29 @@ const Vehicle = {
 ============================================================================ */
 
 const Input = {
+  // `left`/`right` remain as discrete keyboard flags (unchanged behavior).
+  // `wheelSteering` is the continuous -1..1 value driven by the steering wheel.
   state: { accel: false, brake: false, left: false, right: false },
+  wheelSteering: 0,
   qteKeys: { KeyD: 0, KeyF: 1, KeyJ: 2, KeyK: 3 },
+
+  // Input.steering is the single source of truth Vehicle.update() reads:
+  // -1 = full left, 0 = centered, 1 = full right. Keyboard input (discrete)
+  // takes priority when a steer key is held; otherwise the wheel's
+  // continuous value (from touch or mouse dragging) is used.
+  get steering() {
+    if (this.state.left || this.state.right) {
+      return (this.state.right ? 1 : 0) - (this.state.left ? 1 : 0);
+    }
+    return this.wheelSteering;
+  },
 
   init() {
     window.addEventListener('keydown', (e) => this.handleKey(e, true));
     window.addEventListener('keyup', (e) => this.handleKey(e, false));
     this.bindTouchButton('btn-accel', 'accel');
     this.bindTouchButton('btn-brake', 'brake');
-    this.bindTouchButton('btn-left', 'left');
-    this.bindTouchButton('btn-right', 'right');
+    SteeringWheel.init();
 
     document.querySelectorAll('.qte-touch-btn').forEach((btn) => {
       btn.addEventListener('pointerdown', (e) => {
@@ -868,6 +887,106 @@ const Input = {
     el.addEventListener('pointerup', setOff);
     el.addEventListener('pointerleave', setOff);
     el.addEventListener('pointercancel', setOff);
+  },
+};
+
+/* ---------------------------------------------------------------------
+   Virtual steering wheel (mobile-first, also usable with a mouse).
+   Rotating the wheel writes a normalized value into Input.wheelSteering,
+   which Input.steering exposes to Vehicle.update(). The wheel eases back
+   toward center on release rather than snapping.
+--------------------------------------------------------------------- */
+const SteeringWheel = {
+  wrapper: null,
+  wheelEl: null,
+  center: { x: 0, y: 0 },
+  dragging: false,
+  activePointerId: null,
+  startAngle: 0,
+  rotation: 0, // radians, current visual rotation
+  maxRotation: Math.PI * 0.75, // ~135 degrees of wheel travel to each side
+  returnFrame: null,
+
+  init() {
+    this.wrapper = document.getElementById('steering-wheel-wrapper');
+    this.wheelEl = document.getElementById('steering-wheel');
+    if (!this.wrapper || !this.wheelEl) return;
+
+    this.wrapper.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+    this.wrapper.addEventListener('pointermove', (e) => this.onPointerMove(e));
+    this.wrapper.addEventListener('pointerup', (e) => this.onPointerUp(e));
+    this.wrapper.addEventListener('pointercancel', (e) => this.onPointerUp(e));
+
+    // Belt-and-suspenders against iOS text selection / callout / scrolling:
+    // touch-action + user-select CSS handles most of it, these stop the rest.
+    this.wrapper.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    this.wrapper.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    this.wrapper.addEventListener('contextmenu', (e) => e.preventDefault());
+    this.wrapper.addEventListener('selectstart', (e) => e.preventDefault());
+  },
+
+  angleFromCenter(clientX, clientY) {
+    const dx = clientX - this.center.x;
+    const dy = clientY - this.center.y;
+    return Math.atan2(dx, -dy); // 0 = straight up, positive = clockwise/right
+  },
+
+  onPointerDown(e) {
+    e.preventDefault();
+    const rect = this.wrapper.getBoundingClientRect();
+    this.center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    this.dragging = true;
+    this.activePointerId = e.pointerId;
+    if (this.returnFrame) { cancelAnimationFrame(this.returnFrame); this.returnFrame = null; }
+
+    try { this.wrapper.setPointerCapture(e.pointerId); } catch (err) { /* no-op */ }
+
+    const angle = this.angleFromCenter(e.clientX, e.clientY);
+    // Preserve current rotation as a baseline so the wheel doesn't jump.
+    this.startAngle = angle - this.rotation;
+  },
+
+  onPointerMove(e) {
+    if (!this.dragging || e.pointerId !== this.activePointerId) return;
+    e.preventDefault();
+    const angle = this.angleFromCenter(e.clientX, e.clientY);
+    let rotation = angle - this.startAngle;
+    // Normalize into -PI..PI so fast drags don't wrap around oddly.
+    while (rotation > Math.PI) rotation -= Math.PI * 2;
+    while (rotation < -Math.PI) rotation += Math.PI * 2;
+    rotation = THREE.MathUtils.clamp(rotation, -this.maxRotation, this.maxRotation);
+    this.setRotation(rotation);
+  },
+
+  onPointerUp(e) {
+    if (e.pointerId !== undefined && e.pointerId !== this.activePointerId) return;
+    this.dragging = false;
+    try { this.wrapper.releasePointerCapture(e.pointerId); } catch (err) { /* no-op */ }
+    this.activePointerId = null;
+    this.animateReturn();
+  },
+
+  setRotation(rotation) {
+    this.rotation = rotation;
+    this.wheelEl.style.transform = `rotate(${rotation}rad)`;
+    Input.wheelSteering = THREE.MathUtils.clamp(rotation / this.maxRotation, -1, 1);
+    this.wrapper.setAttribute('aria-valuenow', Input.wheelSteering.toFixed(2));
+  },
+
+  // Eases the wheel (and steering value) back toward center after release.
+  animateReturn() {
+    const step = () => {
+      if (this.dragging) { this.returnFrame = null; return; }
+      this.rotation *= 0.8;
+      if (Math.abs(this.rotation) < 0.01) {
+        this.setRotation(0);
+        this.returnFrame = null;
+        return;
+      }
+      this.setRotation(this.rotation);
+      this.returnFrame = requestAnimationFrame(step);
+    };
+    this.returnFrame = requestAnimationFrame(step);
   },
 };
 
@@ -1368,6 +1487,10 @@ const Game = {
     const dt = Math.min(Scene3D.clock.getDelta(), 0.05);
 
     if (!Vehicle.frozen && !PerformanceSystem.active) {
+      // Input.steering resolves keyboard vs. steering-wheel input into one
+      // normalized value; mirror it onto state so Vehicle.update sees it
+      // alongside accel/brake in a single object, as before.
+      Input.state.steering = Input.steering;
       Vehicle.update(dt, Input.state);
       DiscoverySystem.checkProximity();
     }

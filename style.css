@@ -339,9 +339,44 @@ html, body {
 .touch-btn.accel { background: #2f7a4a44; border-color: #7bc47f88; }
 .touch-btn.brake { background: #7a2f2f44; border-color: #c47b7b88; }
 
+/* ===================== STEERING WHEEL ===================== */
+#steering-wheel-wrapper {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+}
+#steering-wheel-wrapper:active { cursor: grabbing; }
+#steering-wheel {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 8px #00000077);
+  transform: rotate(0deg);
+  will-change: transform;
+}
+
 /* Hide touch controls on devices with a fine pointer (mouse) unless touch is the only input */
 @media (hover: hover) and (pointer: fine) {
   #touch-controls { opacity: 0.9; }
+}
+
+@media (max-width: 700px) {
+  #steering-wheel-wrapper { width: 130px; height: 130px; }
 }
 
 /* ===================== ORIENTATION ===================== */
