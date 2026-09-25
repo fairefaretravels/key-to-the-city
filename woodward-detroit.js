@@ -1,4 +1,35 @@
 /* ============================================================================
+   WOODWARD: DETROIT — v0.2
+   ----------------------------------------------------------------------------
+   Builds on the Chapter 01 vertical slice with:
+     - Multiple playable city maps, gated behind an earned-credits system
+     - Walking NPCs + pedestrian groups, ambient traffic with car variety
+     - Lit building windows
+     - A lane-based quick-time-event concert system, one genre per city
+       (rock / blues / rap / jazz), each with its own instrument mapping
+       and lighting atmosphere
+     - A 30-track placeholder song library with a weekly-rotation hook,
+       ready for real licensed audio later
+     - A garage: vehicle type, paint color, and a custom license plate
+       rendered onto the car itself
+ 
+   SECTION MAP:
+     1. SONG LIBRARY
+     2. CITY DATA
+     3. SAVE / PROGRESS  (credits, unlocked cities, garage choices)
+     4. SCENE SETUP      (per-city palette, lit buildings, landmarks)
+     5. NPCS & TRAFFIC
+     6. VEHICLE           (type/color/plate texture)
+     7. INPUT              (driving + QTE key bindings)
+     8. DISCOVERY SYSTEM
+     9. RADIO SYSTEM
+    10. PERFORMANCE / QTE SYSTEM
+    11. CITY PROGRESSION / SELECT
+    12. GARAGE
+    13. UI GLUE
+    14. GAME LOOP
+============================================================================ */
+/* ============================================================================
    1. SONG LIBRARY
    ----------------------------------------------------------------------------
    8 Mile Radio currently uses the Alternative playlist and the real MP3 files
