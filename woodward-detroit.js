@@ -505,7 +505,7 @@ const Scene3D = {
   ========================================================= */
 
   const pavementTexture = new THREE.TextureLoader().load(
-    "./thestatic.PNG"
+    "assets/seo/thestatic.PNG"
   );
 
   pavementTexture.wrapS = THREE.RepeatWrapping;
