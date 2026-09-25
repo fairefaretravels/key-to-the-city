@@ -1,49 +1,14 @@
 /* ============================================================================
-   WOODWARD: DETROIT — v0.2
-   ----------------------------------------------------------------------------
-   Builds on the Chapter 01 vertical slice with:
-     - Multiple playable city maps, gated behind an earned-credits system
-     - Walking NPCs + pedestrian groups, ambient traffic with car variety
-     - Lit building windows
-     - A lane-based quick-time-event concert system, one genre per city
-       (rock / blues / rap / jazz), each with its own instrument mapping
-       and lighting atmosphere
-     - A 30-track placeholder song library with a weekly-rotation hook,
-       ready for real licensed audio later
-     - A garage: vehicle type, paint color, and a custom license plate
-       rendered onto the car itself
-
-   SECTION MAP:
-     1. SONG LIBRARY
-     2. CITY DATA
-     3. SAVE / PROGRESS  (credits, unlocked cities, garage choices)
-     4. SCENE SETUP      (per-city palette, lit buildings, landmarks)
-     5. NPCS & TRAFFIC
-     6. VEHICLE           (type/color/plate texture)
-     7. INPUT              (driving + QTE key bindings)
-     8. DISCOVERY SYSTEM
-     9. RADIO SYSTEM
-    10. PERFORMANCE / QTE SYSTEM
-    11. CITY PROGRESSION / SELECT
-    12. GARAGE
-    13. UI GLUE
-    14. GAME LOOP
-============================================================================ */
-
-/* ============================================================================
    1. SONG LIBRARY
    ----------------------------------------------------------------------------
-   Placeholder track metadata only — original titles, no real artists, no
-   lyrics. `audioUrl` is the slot for a real, licensed track later; until
-   then the QTE note pattern is generated procedurally from `bpm` + `seed`
-   so the minigame is fully playable without audio.
-   A 30-track library keeps any one city from looping the same 2-3 songs
-   into the ground. `getWeeklyRotation()` reshuffles which tracks are
-   "featured" based on the calendar week, as a hook for dropping in new
-   licensed songs on a cadence without touching game code.
+   8 Mile Radio currently uses the Alternative playlist and the real MP3 files
+   below. The other genres remain available for the game's future radio/QTE
+   systems.
 ============================================================================ */
-
 const SONG_LIBRARY = {
+  /* =========================
+     8 MILE RADIO — ALTERNATIVE
+  ========================= */
   alternative: [
     {
       id: 'alternative-0',
@@ -51,7 +16,7 @@ const SONG_LIBRARY = {
       artist: 'Lavelle feat The Switchblades',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
+      audioUrl: 'assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
     },
     {
       id: 'alternative-1',
@@ -59,7 +24,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/4-x-4.mp3'
+      audioUrl: 'assets/music/4-x-4.mp3'
     },
     {
       id: 'alternative-2',
@@ -67,7 +32,7 @@ const SONG_LIBRARY = {
       artist: 'AL LUV FT SWITCHBLADES',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
+      audioUrl: 'assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
     },
     {
       id: 'alternative-3',
@@ -75,7 +40,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/ALL DAT ASS.mp3'
+      audioUrl: 'assets/music/ALL DAT ASS.mp3'
     },
     {
       id: 'alternative-4',
@@ -83,7 +48,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Alexa (Remastered).mp3'
+      audioUrl: 'assets/music/Alexa (Remastered).mp3'
     },
     {
       id: 'alternative-5',
@@ -91,7 +56,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/All I have In This World.mp3'
+      audioUrl: 'assets/music/All I have In This World.mp3'
     },
     {
       id: 'alternative-6',
@@ -99,13 +64,21 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Disclaimer.mp3'
+      audioUrl: 'assets/music/Disclaimer.mp3'
     }
   ],
-
+  /* =========================
+     ROCK
+  ========================= */
   rock: [
-    'Midnight Overdrive', 'Steel City Static', 'Chrome Horizon', 'Woodward Thunder',
-    'Ignition Line', 'Neon Exhaust', 'Riverfront Riot', 'Eight Cylinder Heart',
+    'Midnight Overdrive',
+    'Steel City Static',
+    'Chrome Horizon',
+    'Woodward Thunder',
+    'Ignition Line',
+    'Neon Exhaust',
+    'Riverfront Riot',
+    'Eight Cylinder Heart'
   ].map((t, i) => ({
     id: `rock-${i}`,
     title: t,
@@ -113,10 +86,18 @@ const SONG_LIBRARY = {
     bpm: 128 + (i % 4) * 6,
     audioUrl: null
   })),
-
+  /* =========================
+     BLUES
+  ========================= */
   blues: [
-    'Backseat Confession', 'Low Water Blues', 'Gravel Road Sermon', 'Copper Line',
-    'Twelve Bar Sundown', 'Rust Belt Lullaby', 'Slow Burn Avenue', 'Delta to Detroit',
+    'Backseat Confession',
+    'Low Water Blues',
+    'Gravel Road Sermon',
+    'Copper Line',
+    'Twelve Bar Sundown',
+    'Rust Belt Lullaby',
+    'Slow Burn Avenue',
+    'Delta to Detroit'
   ].map((t, i) => ({
     id: `blues-${i}`,
     title: t,
@@ -124,10 +105,18 @@ const SONG_LIBRARY = {
     bpm: 78 + (i % 4) * 4,
     audioUrl: null
   })),
-
+  /* =========================
+     RAP
+  ========================= */
   rap: [
-    'City Key Cypher', 'Concrete Kingdom', 'Corner Store Legend', 'Skyline Flow',
-    'Downbeat District', 'Motor City Motive', 'Trap Plaza', 'First Gear Anthem',
+    'City Key Cypher',
+    'Concrete Kingdom',
+    'Corner Store Legend',
+    'Skyline Flow',
+    'Downbeat District',
+    'Motor City Motive',
+    'Trap Plaza',
+    'First Gear Anthem'
   ].map((t, i) => ({
     id: `rap-${i}`,
     title: t,
@@ -135,10 +124,18 @@ const SONG_LIBRARY = {
     bpm: 90 + (i % 4) * 8,
     audioUrl: null
   })),
-
+  /* =========================
+     JAZZ
+  ========================= */
   jazz: [
-    'Late Set at Hart Plaza', 'Blue Hour Sax', 'Riverside Standard', 'After Hours Avenue',
-    'Brushed Cymbal Nights', 'Uptown Interlude', 'Velvet Downtown', 'Quiet Storm Detroit',
+    'Late Set at Hart Plaza',
+    'Blue Hour Sax',
+    'Riverside Standard',
+    'After Hours Avenue',
+    'Brushed Cymbal Nights',
+    'Uptown Interlude',
+    'Velvet Downtown',
+    'Quiet Storm Detroit'
   ].map((t, i) => ({
     id: `jazz-${i}`,
     title: t,
@@ -147,7 +144,41 @@ const SONG_LIBRARY = {
     audioUrl: null
   }))
 };
-
+/* ============================================================================
+   ALL SONGS
+============================================================================ */
+const ALL_SONGS = Object.values(SONG_LIBRARY).flat();
+/* ============================================================================
+   WEEKLY FEATURED TRACK
+   ----------------------------------------------------------------------------
+   Kept for the existing game systems. It does NOT control 8 Mile Radio.
+============================================================================ */
+function getIsoWeekNumber(date = new Date()) {
+  const d = new Date(
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    )
+  );
+  d.setUTCDate(
+    d.getUTCDate() + 4 - (d.getUTCDay() || 7)
+  );
+  const yearStart = new Date(
+    Date.UTC(d.getUTCFullYear(), 0, 1)
+  );
+  return Math.ceil(
+    ((d - yearStart) / 86400000 + 1) / 7
+  );
+}
+function getWeeklyFeaturedTrack(genre) {
+  const pool = SONG_LIBRARY[genre];
+  if (!pool || !pool.length) {
+    return SONG_LIBRARY.alternative[0];
+  }
+  const week = getIsoWeekNumber();
+  return pool[week % pool.length];
+}
 const ALL_SONGS = Object.values(SONG_LIBRARY).flat();
 
 function getIsoWeekNumber(date = new Date()) {
@@ -172,8 +203,8 @@ function getWeeklyFeaturedTrack(genre) {
 const CITIES = {
   detroit: {
     id: 'detroit',
-    name: 'Detroit',
-    genre: 'rock',
+    name: 'The Static',
+    genre: 'alternative',
     unlockCost: 0, // always available
     palette: { fog: 0x0a0d13, ground: 0x14171c, accent: 0xff5533 },
     start: { x: 0, z: 0, heading: 0 },
@@ -1140,68 +1171,182 @@ const DiscoverySystem = {
 /* ============================================================================
    9. RADIO SYSTEM
    ----------------------------------------------------------------------------
-   Station -> genre -> SONG_LIBRARY playlist mapping. Each station may
-   declare its own `genre`; if it doesn't, it falls back to the current
-   city's genre (the original behavior for rock/blues/rap/jazz stations).
-   "8 Mile Radio" declares `genre: 'alternative'` in CITIES.detroit, which
-   is the connection that routes it to the seven real MP3s.
+   Current development station:
+     8 Mile Radio -> Alternative -> real MP3 playlist
+   The same song object controls BOTH:
+     - what is displayed in "Now Playing"
+     - what audio file is actually played
+   Other station/genre behavior remains available for future expansion.
 ============================================================================ */
-
 const RadioSystem = {
-  currentStation: null, audioEl: null, currentTrack: null,
-
+  currentStation: null,
+  audioEl: null,
+  currentTrack: null,
+  currentIndex: 0,
+  initialized: false,
   init() {
-    this.currentStation = currentCity.radioStations[0];
+    this.currentStation = currentCity.radioStations.find(
+      station => station.genre === 'alternative'
+    ) || currentCity.radioStations[0];
     this.audioEl = new Audio();
-    this.currentTrack = getWeeklyFeaturedTrack(this.getStationGenre(this.currentStation));
-    document.getElementById('radio-station-name').textContent = this.currentStation.name;
+    this.audioEl.preload = 'auto';
+    /*
+      Start 8 Mile Radio with the FIRST REAL ALTERNATIVE TRACK.
+      This intentionally does NOT use getWeeklyFeaturedTrack().
+      We want predictable testing right now.
+    */
+    const playlist = this.getStationPlaylist(this.currentStation);
+    this.currentIndex = 0;
+    this.currentTrack = playlist[0] || null;
+    if (!this.currentTrack) {
+      console.error('RadioSystem: No tracks found for station.');
+      return;
+    }
+    this.audioEl.addEventListener('ended', () => {
+      this.nextTrack(true);
+    });
+    this.audioEl.addEventListener('error', () => {
+      const statusEl = document.getElementById('radio-status');
+      if (statusEl) {
+        statusEl.textContent =
+          `Unable to load "${this.currentTrack.title}". Check the MP3 file path.`;
+      }
+      console.error(
+        'Radio audio error:',
+        this.currentTrack.audioUrl
+      );
+    });
+    this.renderStation();
     this.renderNowPlaying();
-
-    // Continuous playback: once the current track finishes, automatically
-    // advance to the next track in this station's playlist and keep playing,
-    // looping back to the start of the playlist indefinitely.
-    this.audioEl.addEventListener('ended', () => this.nextTrack(true));
+    this.bindControls();
+    this.initialized = true;
   },
-
-  // Resolves which SONG_LIBRARY genre a station plays. A station's own
-  // `genre` field wins (this is how "8 Mile Radio" -> 'alternative' is
-  // wired); stations without one keep the original city-genre behavior.
+  /* --------------------------------------------------------------------------
+     STATION
+  -------------------------------------------------------------------------- */
   getStationGenre(station) {
     return (station && station.genre) || currentCity.genre;
   },
-
   getStationPlaylist(station) {
-    return SONG_LIBRARY[this.getStationGenre(station)] || SONG_LIBRARY[currentCity.genre];
+    const genre = this.getStationGenre(station);
+    return SONG_LIBRARY[genre] || [];
   },
-
+  renderStation() {
+    const stationEl =
+      document.getElementById('radio-station-name');
+    if (!stationEl || !this.currentStation) return;
+    stationEl.textContent = this.currentStation.name;
+  },
+  /* --------------------------------------------------------------------------
+     NOW PLAYING
+  -------------------------------------------------------------------------- */
   renderNowPlaying() {
-    document.getElementById('radio-now-playing').textContent =
-      `This week: "${this.currentTrack.title}" (${this.currentTrack.genre})`;
+    const nowPlayingEl =
+      document.getElementById('radio-now-playing');
+    if (!nowPlayingEl || !this.currentTrack) return;
+    const artist = this.currentTrack.artist
+      ? ` — ${this.currentTrack.artist}`
+      : '';
+    nowPlayingEl.textContent =
+      `${this.currentTrack.title}${artist}`;
   },
-
-  play() {
-    const statusEl = document.getElementById('radio-status');
-    if (!this.currentTrack.audioUrl) {
-      statusEl.textContent = `No licensed audio configured yet for "${this.currentTrack.title}". This slot is ready for a real stream/track URL.`;
+  /* --------------------------------------------------------------------------
+     TUNE IN / PLAY
+  -------------------------------------------------------------------------- */
+  async play() {
+    const statusEl =
+      document.getElementById('radio-status');
+    if (!this.currentTrack) {
+      if (statusEl) {
+        statusEl.textContent =
+          'No track selected.';
+      }
       return;
     }
-    // encodeURI so filenames with spaces, parentheses, hyphens, and a
-    // trailing space before the extension (e.g. "...Collect The Vibe .mp3")
-    // resolve to a valid, correctly percent-encoded request path.
-    this.audioEl.src = encodeURI(this.currentTrack.audioUrl);
-    this.audioEl.play();
-    statusEl.textContent = 'Now playing: ' + this.currentTrack.title;
-  },
-
-  // `autoplay` is true when called from the 'ended' handler above, so the
-  // continuous-playback chain keeps going without the player pressing Play.
-  nextTrack(autoplay) {
-    const pool = this.getStationPlaylist(this.currentStation);
-    const idx = pool.findIndex((t) => t.id === this.currentTrack.id);
-    this.currentTrack = pool[(idx + 1) % pool.length];
+    if (!this.currentTrack.audioUrl) {
+      if (statusEl) {
+        statusEl.textContent =
+          `No audio file configured for "${this.currentTrack.title}".`;
+      }
+      return;
+    }
+    /*
+      Set the actual MP3 URL.
+    */
+    this.audioEl.src =
+      encodeURI(this.currentTrack.audioUrl);
+    /*
+      Update the display BEFORE attempting playback.
+    */
     this.renderNowPlaying();
-    if (autoplay) this.play();
+    try {
+      await this.audioEl.play();
+      if (statusEl) {
+        statusEl.textContent =
+          `Playing: ${this.currentTrack.title}`;
+      }
+      console.log(
+        '8 Mile Radio playing:',
+        this.currentTrack.title,
+        this.currentTrack.audioUrl
+      );
+    } catch (error) {
+      console.error(
+        'Radio playback failed:',
+        error
+      );
+      if (statusEl) {
+        statusEl.textContent =
+          `Playback failed: ${error.message}`;
+      }
+    }
   },
+  /* --------------------------------------------------------------------------
+     NEXT TRACK
+  -------------------------------------------------------------------------- */
+  nextTrack(autoplay = false) {
+    const playlist =
+      this.getStationPlaylist(this.currentStation);
+    if (!playlist.length) {
+      console.error(
+        'RadioSystem: Station playlist is empty.'
+      );
+      return;
+    }
+    this.currentIndex =
+      (this.currentIndex + 1) % playlist.length;
+    this.currentTrack =
+      playlist[this.currentIndex];
+    this.renderNowPlaying();
+    if (autoplay) {
+      this.play();
+    }
+  },
+  /* --------------------------------------------------------------------------
+     RADIO BUTTONS
+  -------------------------------------------------------------------------- */
+  bindControls() {
+    const playBtn =
+      document.getElementById('radio-play-btn');
+    const nextBtn =
+      document.getElementById('radio-next-btn');
+    /*
+      Prevent duplicate listeners if RadioSystem.init()
+      happens more than once.
+    */
+    if (playBtn && !playBtn.dataset.radioBound) {
+      playBtn.addEventListener('click', () => {
+        this.play();
+      });
+      playBtn.dataset.radioBound = 'true';
+    }
+    if (nextBtn && !nextBtn.dataset.radioBound) {
+      nextBtn.addEventListener('click', () => {
+        this.nextTrack(true);
+      });
+      nextBtn.dataset.radioBound = 'true';
+    }
+  }
 };
 
 /* ============================================================================
