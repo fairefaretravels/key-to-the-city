@@ -62,7 +62,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-1',
       title: '4-X-4',
-      artist: '',
+      artist: 'Brass Earthling',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/4-x-4.mp3'
@@ -70,7 +70,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-2',
       title: 'Throwback',
-      artist: 'AL LUV FT SWITCHBLADES',
+      artist: 'Al Luv FT The Switchblades',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
@@ -78,7 +78,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-3',
       title: 'All Dat Ass',
-      artist: '',
+      artist: 'G4E Souljah feat. Seneca Mack Uptop Gambino',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/ALL DAT ASS.mp3'
@@ -86,7 +86,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-4',
       title: 'Alexa',
-      artist: '',
+      artist: 'Brass Earthling',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/Alexa (Remastered).mp3'
@@ -94,7 +94,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-5',
       title: 'All I Have In This World',
-      artist: '',
+      artist: 'Base',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/All I have In This World.mp3'
@@ -102,7 +102,7 @@ const SONG_LIBRARY = {
     {
       id: 'alternative-6',
       title: 'Disclaimer',
-      artist: '',
+      artist: 'Brass Earthling',
       genre: 'alternative',
       bpm: null,
       audioUrl: 'assets/music/Disclaimer.mp3'
