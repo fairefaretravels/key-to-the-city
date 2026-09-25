@@ -1921,7 +1921,14 @@ const UI = {
 const Game = {
   init() {
     ProgressManager.load();
-    Scene3D.init();
+
+    try {
+      Scene3D.init();
+      console.log("WOODWARD: Scene3D initialized");
+    } catch (error) {
+      console.error("WOODWARD: Scene3D FAILED", error);
+    }
+
     Vehicle.init();
     Input.init();
     RadioSystem.init();
