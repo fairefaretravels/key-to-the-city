@@ -529,7 +529,7 @@ const Scene3D = {
   const pavementLoader = new THREE.TextureLoader();
 
   pavementLoader.load(
-    "./thestatic.PNG",
+    "assets/seo/thestatic.PNG",
 
     function(texture) {
 
