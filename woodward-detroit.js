@@ -173,7 +173,7 @@ const CITIES = {
   detroit: {
     id: 'detroit',
     name: 'Detroit',
-    genre: 'rock',
+    genre: 'alternative',
     unlockCost: 0, // always available
     palette: { fog: 0x0a0d13, ground: 0x14171c, accent: 0xff5533 },
     start: { x: 0, z: 0, heading: 0 },
