@@ -32,8 +32,45 @@ html, body {
   display: block;
   width: 100%;
   height: 100%;
+
+  /* Let thestatic.PNG show through */
+  background: transparent;
 }
 
+/* =========================================================
+   THE STATIC — ACTUAL PHOTO BACKGROUND
+   Uses thestatic.PNG directly
+========================================================= */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+
+  background-image:
+    linear-gradient(
+      rgba(5, 7, 10, 0.25),
+      rgba(5, 7, 10, 0.55)
+    ),
+    var(--static-photo);
+
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Keeps the photo behind the game/UI */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: -1;
+  pointer-events: none;
+}
 /* ===================== LOADING ===================== */
 #loading-screen {
   position: fixed;
@@ -637,4 +674,21 @@ html, body {
   color: var(--accent);
   font-weight: 700;
   margin-bottom: 18px;
+}
+
+:root {
+  --bg: #05070a;
+  --panel: #0d1117ee;
+  --panel-border: #ffffff22;
+  --accent: #d9a441;
+  --accent-dim: #d9a44166;
+  --text: #f2f0e9;
+  --text-dim: #a9a9a2;
+  --danger: #b5482f;
+
+  /* THE ACTUAL PHOTO */
+  --static-photo: url("./thestatic.PNG");
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
