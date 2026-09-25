@@ -551,46 +551,6 @@ const Scene3D = {
   this.dynamicGroup.add(road);
 
 
-  // =========================================================
-  // PAVEMENT PHOTO
-  // =========================================================
-  // The photo loads AFTER the road exists.
-  // If the image fails, the game continues normally.
-
-  const pavementLoader = new THREE.TextureLoader();
-
-  pavementLoader.load(
-    "assets/seo/thestatic.PNG",
-
-    function(texture) {
-
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-
-      texture.repeat.set(
-        1,
-        Math.max(1, length / 35)
-      );
-
-      // Apply the photograph to the existing road.
-      road.material.map = texture;
-      road.material.needsUpdate = true;
-
-      console.log("WOODWARD pavement photo loaded.");
-    },
-
-    undefined,
-
-    function(error) {
-
-      console.warn(
-        "WOODWARD pavement photo could not load. Using fallback pavement.",
-        error
-      );
-
-    }
-  );
-
 
   // =========================================================
   // CENTER ROAD DASHES
