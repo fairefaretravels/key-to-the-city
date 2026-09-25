@@ -196,6 +196,31 @@ const CITIES = {
         performanceLocation: true, performanceVenueName: 'HART PLAZA',
       },
     ],
+    // Shop stops — separate from `landmarks` above (no history panel or
+    // discovery credits, just a storefront the player can pull into and
+    // spend collected coins). See STORE SYSTEM section for behavior.
+    stores: [
+      {
+        id: 'woodward-threads', name: 'WOODWARD THREADS', position: { x: -18, z: -140 },
+        discoveryRadius: 20, meta: 'Woodward Ave · Clothing & Shoes', signColor: 0xff5533,
+        inventory: [
+          { id: 'flannel-jacket', name: 'Flannel Jacket', category: 'Clothes', price: 15, icon: '🧥' },
+          { id: 'graphic-tee', name: 'Graphic Tee', category: 'Clothes', price: 8, icon: '👕' },
+          { id: 'denim-jeans', name: 'Denim Jeans', category: 'Clothes', price: 12, icon: '👖' },
+          { id: 'high-tops', name: 'High-Top Sneakers', category: 'Shoes', price: 18, icon: '👟' },
+          { id: 'leather-boots', name: 'Leather Boots', category: 'Shoes', price: 22, icon: '🥾' },
+        ],
+      },
+      {
+        id: 'grand-river-optical', name: 'GRAND RIVER OPTICAL', position: { x: 18, z: -420 },
+        discoveryRadius: 20, meta: 'Grand River Ave · Eyewear', signColor: 0x4fa8ff,
+        inventory: [
+          { id: 'aviators', name: 'Aviator Shades', category: 'Glasses', price: 10, icon: '🕶️' },
+          { id: 'round-frames', name: 'Round Frames', category: 'Glasses', price: 14, icon: '👓' },
+          { id: 'street-shades', name: 'Street Shades', category: 'Glasses', price: 9, icon: '🕶️' },
+        ],
+      },
+    ],
     // NOTE: "8 Mile Radio" is added FIRST so it is the default station the
     // player hears when the radio panel is opened. Its `genre: 'alternative'`
     // field is what routes it to the SONG_LIBRARY.alternative playlist (the
@@ -314,6 +339,8 @@ const ProgressManager = {
       concert: false,
       cityKey: false,
       credits: 0,
+      coins: 0,
+      purchasedItems: [],
       unlockedCities: ['detroit'],
       landmarksDiscovered: {},
       garage: { vehicleType: 'muscle', color: '#8a1f2b', plate: 'DETROIT' },
@@ -329,6 +356,28 @@ const ProgressManager = {
     this.state.credits += amount;
     document.getElementById('credits-count').textContent = this.state.credits;
     this.save();
+  },
+
+  addCoins(amount) {
+    this.state.coins += amount;
+    const el = document.getElementById('coins-count');
+    if (el) el.textContent = this.state.coins;
+    this.save();
+  },
+
+  hasPurchased(itemId) {
+    return this.state.purchasedItems.includes(itemId);
+  },
+
+  // Returns true if the purchase succeeded (enough coins, not already owned).
+  purchase(itemId, price) {
+    if (this.hasPurchased(itemId) || this.state.coins < price) return false;
+    this.state.coins -= price;
+    this.state.purchasedItems.push(itemId);
+    const el = document.getElementById('coins-count');
+    if (el) el.textContent = this.state.coins;
+    this.save();
+    return true;
   },
 
   markDiscovered(landmarkId, progressKey, points) {
@@ -357,6 +406,8 @@ const ProgressManager = {
 
   render() {
     document.getElementById('credits-count').textContent = this.state.credits;
+    const coinsEl = document.getElementById('coins-count');
+    if (coinsEl) coinsEl.textContent = this.state.coins;
     const list = document.getElementById('progress-list');
     if (!list) return;
     const rows = [
@@ -429,6 +480,8 @@ const Scene3D = {
     this.buildCityDressing(city);
     NPCSystem.rebuild(city);
     TrafficSystem.rebuild(city);
+    StoreSystem.buildStores(city);
+    CoinSystem.rebuild(city);
 
     document.getElementById('hud-city-name').textContent = 'WOODWARD: ' + city.name.toUpperCase();
     if (Vehicle.mesh) {
@@ -1138,6 +1191,179 @@ const DiscoverySystem = {
 };
 
 /* ============================================================================
+   8B. STORE SYSTEM
+   ----------------------------------------------------------------------------
+   Shop stops (e.g. "WOODWARD THREADS", "GRAND RIVER OPTICAL") pulled from
+   `city.stores`. Driving up to one freezes the car and opens a shop panel
+   listing its inventory; items are bought with coins collected via
+   CoinSystem, not credits. Purchases persist in ProgressManager.state.
+============================================================================ */
+
+const StoreSystem = {
+  active: false,
+  visitedIds: new Set(),
+  _current: null,
+
+  buildStores(city) {
+    this.visitedIds = new Set();
+    (city.stores || []).forEach((store) => {
+      const group = new THREE.Group();
+
+      const shopMat = new THREE.MeshStandardMaterial({ color: 0x2a2d33, roughness: 0.8 });
+      const shop = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 10), shopMat);
+      shop.position.y = 4;
+      shop.castShadow = true;
+      shop.receiveShadow = true;
+      group.add(shop);
+
+      const signMat = new THREE.MeshStandardMaterial({
+        color: store.signColor || 0xffffff, emissive: store.signColor || 0xffffff, emissiveIntensity: 1.1,
+      });
+      const sign = new THREE.Mesh(new THREE.BoxGeometry(10, 1.4, 0.4), signMat);
+      sign.position.set(0, 8.7, 5.2);
+      group.add(sign);
+
+      const signLight = new THREE.PointLight(store.signColor || 0xffffff, 1, 20);
+      signLight.position.set(0, 9, 6);
+      group.add(signLight);
+
+      group.position.set(store.position.x, 0, store.position.z);
+      group.userData.storeId = store.id;
+      Scene3D.dynamicGroup.add(group);
+      store._worldPosition = new THREE.Vector3(store.position.x, 0, store.position.z);
+    });
+  },
+
+  checkProximity() {
+    if (this.active || DiscoverySystem.active || PerformanceSystem.active) return;
+    for (const store of currentCity.stores || []) {
+      const dist = Vehicle.position.distanceTo(store._worldPosition);
+      if (dist <= store.discoveryRadius) { this.trigger(store); break; }
+    }
+  },
+
+  trigger(store) {
+    this.active = true;
+    this._current = store;
+    Vehicle.frozen = true;
+    this.visitedIds.add(store.id);
+
+    document.getElementById('store-title').textContent = store.name;
+    document.getElementById('store-meta').textContent = store.meta || '';
+    this.renderInventory(store);
+    document.getElementById('store-overlay').classList.remove('hidden');
+  },
+
+  renderInventory(store) {
+    const coinsLeft = ProgressManager.state.coins;
+    document.getElementById('store-coins').textContent = coinsLeft;
+    const list = document.getElementById('store-item-list');
+    list.innerHTML = store.inventory.map((item) => {
+      const owned = ProgressManager.hasPurchased(item.id);
+      const afford = coinsLeft >= item.price;
+      const btnLabel = owned ? 'OWNED' : `BUY · ${item.price} 🪙`;
+      const disabled = owned || !afford ? 'disabled' : '';
+      return `<li class="store-item">
+        <span class="store-item-icon">${item.icon}</span>
+        <span class="store-item-info">
+          <span class="store-item-name">${item.name}</span>
+          <span class="store-item-cat">${item.category}</span>
+        </span>
+        <button class="store-buy-btn" data-item-id="${item.id}" ${disabled}>${btnLabel}</button>
+      </li>`;
+    }).join('');
+  },
+
+  buy(itemId) {
+    if (!this._current) return;
+    const item = this._current.inventory.find((i) => i.id === itemId);
+    if (!item) return;
+    const ok = ProgressManager.purchase(item.id, item.price);
+    if (ok) {
+      UI.showToast('PURCHASED', `${item.name} added to your closet.`);
+      this.renderInventory(this._current);
+    } else if (ProgressManager.hasPurchased(item.id)) {
+      // already owned, nothing to do
+    } else {
+      UI.showToast('NOT ENOUGH COINS', `Run over more coins to afford the ${item.name}.`);
+    }
+  },
+
+  continueDrive() {
+    document.getElementById('store-overlay').classList.add('hidden');
+    this.active = false;
+    this._current = null;
+    Vehicle.frozen = false;
+  },
+};
+
+/* ============================================================================
+   8C. COIN SYSTEM
+   ----------------------------------------------------------------------------
+   Small collectible coins scattered along the road. Driving over one
+   collects it and adds to ProgressManager.state.coins, the currency spent
+   in StoreSystem. Placeholder geometry (a spinning gold cylinder) — swap
+   for a real coin model later without touching the placement/collection
+   logic.
+============================================================================ */
+
+const CoinSystem = {
+  group: null,
+  coins: [], // { mesh, worldPos, collected }
+  collectedIds: new Set(), // persists for the current page session only
+
+  rebuild(city) {
+    if (this.group) Scene3D.scene.remove(this.group);
+    this.group = new THREE.Group();
+    Scene3D.scene.add(this.group);
+    this.coins = [];
+
+    const geo = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 16);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0xffcf40, emissive: 0xffcf40, emissiveIntensity: 0.6, metalness: 0.6, roughness: 0.3,
+    });
+
+    const laneOffsets = [-city.road.width / 4, city.road.width / 4];
+    const spacing = 24;
+    let i = 0;
+    for (let z = -20; z > -city.road.length + 20; z -= spacing) {
+      const x = laneOffsets[i % 2];
+      const id = `${city.id}:${Math.round(z)}:${i % 2}`;
+      i++;
+      if (this.collectedIds.has(id)) continue;
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.rotation.x = Math.PI / 2;
+      mesh.position.set(x, 0.6, z);
+      mesh.castShadow = true;
+      this.group.add(mesh);
+
+      this.coins.push({ id, mesh, worldPos: new THREE.Vector3(x, 0.6, z), collected: false });
+    }
+  },
+
+  checkCollection() {
+    for (const coin of this.coins) {
+      if (coin.collected) continue;
+      const dist = Vehicle.position.distanceTo(coin.worldPos);
+      if (dist <= 3) {
+        coin.collected = true;
+        this.collectedIds.add(coin.id);
+        this.group.remove(coin.mesh);
+        ProgressManager.addCoins(1);
+        if (StoreSystem.active) StoreSystem.renderInventory(StoreSystem._current);
+      }
+    }
+  },
+
+  update(dt) {
+    for (const coin of this.coins) {
+      if (!coin.collected) coin.mesh.rotation.z += dt * 2;
+    }
+  },
+};
+
+/* ============================================================================
    9. RADIO SYSTEM
    ----------------------------------------------------------------------------
    Station -> genre -> SONG_LIBRARY playlist mapping. Each station may
@@ -1554,6 +1780,12 @@ const UI = {
 
     document.getElementById('discovery-continue').addEventListener('click', () => DiscoverySystem.continueDrive());
 
+    document.getElementById('store-continue').addEventListener('click', () => StoreSystem.continueDrive());
+    document.getElementById('store-item-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('.store-buy-btn');
+      if (btn && !btn.disabled) StoreSystem.buy(btn.dataset.itemId);
+    });
+
     document.getElementById('radio-toggle').addEventListener('click', () =>
       document.getElementById('radio-panel').classList.toggle('hidden'));
     document.getElementById('radio-play-btn').addEventListener('click', () => RadioSystem.play());
@@ -1625,9 +1857,12 @@ const Game = {
       Input.state.steering = Input.steering;
       Vehicle.update(dt, Input.state);
       DiscoverySystem.checkProximity();
+      StoreSystem.checkProximity();
+      CoinSystem.checkCollection();
     }
     NPCSystem.update(dt);
     TrafficSystem.update(dt);
+    CoinSystem.update(dt);
 
     this.updateCamera();
     Scene3D.renderer.render(Scene3D.scene, Scene3D.camera);

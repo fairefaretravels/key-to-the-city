@@ -133,6 +133,7 @@
     </div>
     <div class="hud-right">
       <div id="credits-chip">★ <span id="credits-count">0</span></div>
+      <div id="coins-chip">🪙 <span id="coins-count">0</span></div>
       <button id="garage-toggle" aria-label="Open garage">🚗</button>
       <button id="map-toggle" aria-label="Open map select">🗺</button>
       <button id="progress-toggle" aria-label="Show progress">DETROIT</button>
@@ -203,6 +204,18 @@
     </div>
   </div>
 
+  <!-- ======================= STORE OVERLAY ======================= -->
+  <div id="store-overlay" class="overlay hidden">
+    <div class="discovery-panel store-panel">
+      <div class="discovery-kicker">SHOP</div>
+      <h1 id="store-title">STORE NAME</h1>
+      <div id="store-meta"></div>
+      <div class="store-coins-row">YOUR COINS: <span id="store-coins">0</span> 🪙</div>
+      <ul id="store-item-list"><!-- populated by StoreSystem --></ul>
+      <button id="store-continue" class="primary-btn">CONTINUE DRIVE</button>
+    </div>
+  </div>
+
   <!-- ======================= RADIO PANEL ======================= -->
   <div id="radio-panel" class="panel hidden radio-panel-v2">
     <div class="radio-header">
@@ -229,7 +242,7 @@
   <div id="performance-overlay" class="overlay hidden">
     <div class="discovery-panel performance-panel">
       <div class="discovery-kicker" id="performance-location">HART PLAZA</div>
-      <div class="genre-badge" id="performance-genre">alternative</div>
+      <div class="genre-badge" id="performance-genre">ROCK</div>
       <h1>LIVE PERFORMANCE</h1>
       <p id="performance-song"></p>
       <p id="performance-copy">Detroit is listening. Hit the notes as they reach the line.</p>
