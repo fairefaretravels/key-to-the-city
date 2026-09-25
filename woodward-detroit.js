@@ -36,6 +36,16 @@
    below. The other genres remain available for the game's future radio/QTE
    systems.
 ============================================================================ */
+// ---- TEMPORARY ON-SCREEN ERROR DISPLAY (remove once fixed) ----
+window.addEventListener('error', (e) => {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a00;color:#fff;' +
+    'font:12px monospace;padding:10px;z-index:99999;white-space:pre-wrap;';
+  box.textContent = 'ERROR: ' + e.message + '\nfile: ' + e.filename + '\nline: ' + e.lineno;
+  document.body.appendChild(box);
+});
+// ---- END TEMPORARY ----
+
 const SONG_LIBRARY = {
   /* =========================
      8 MILE RADIO — ALTERNATIVE
