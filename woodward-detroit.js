@@ -1880,29 +1880,23 @@ const UI = {
 
 const Game = {
   init() {
-    console.log("WOODWARD STARTING...");
+  console.log('1: before ProgressManager.load');
+  ProgressManager.load();
+  console.log('2: before Scene3D.init');
+  Scene3D.init();
+  console.log('3: before Vehicle.init');
+  Vehicle.init();
+  console.log('4: before Input.init');
+  Input.init();
+  console.log('5: before RadioSystem.init');
+  RadioSystem.init();
+  console.log('6: before UI.init');
+  UI.init();
+  console.log('7: all init calls succeeded');
 
-    try {
-      console.log("1. ProgressManager");
-      ProgressManager.load();
-
-      console.log("2. Scene3D");
-      Scene3D.init();
-
-      console.log("3. Vehicle");
-      Vehicle.init();
-
-      console.log("4. Input");
-      Input.init();
-
-      console.log("5. RadioSystem");
-      RadioSystem.init();
-
-      console.log("6. UI");
-      UI.init();
-
-      console.log("7. HIDING LOADING SCREEN");
-      document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('loading-screen').classList.add('hidden');
+  requestAnimationFrame(() => this.loop());
+},
 
       console.log("WOODWARD READY");
 
