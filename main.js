@@ -43,64 +43,27 @@
    licensed songs on a cadence without touching game code.
 ============================================================================ */
 
-alternative: [
-  {
-    id: 'alternative-0',
-    title: 'Collect The Vibe',
-    artist: 'Lavelle feat The Switchblades',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/Lavelle feat The Switchblades - Collect The Vibe .mp3'
-  },
-  {
-    id: 'alternative-1',
-    title: '4-X-4',
-    artist: '',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/4-x-4.mp3'
-  },
-  {
-    id: 'alternative-2',
-    title: 'Throwback',
-    artist: 'AL LUV FT SWITCHBLADES',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
-  },
-  {
-    id: 'alternative-3',
-    title: 'All Dat Ass',
-    artist: '',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/ALL DAT ASS.mp3'
-  },
-  {
-    id: 'alternative-4',
-    title: 'Alexa',
-    artist: '',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/Alexa (Remastered).mp3'
-  },
-  {
-    id: 'alternative-5',
-    title: 'All I Have In This World',
-    artist: '',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/All I have In This World.mp3'
-  },
-  {
-    id: 'alternative-6',
-    title: 'Disclaimer',
-    artist: '',
-    genre: 'alternative',
-    bpm: null,
-    audioUrl: 'audio/Disclaimer.mp3'
-  }
-]
+const SONG_LIBRARY = {
+  rock: [
+    'Midnight Overdrive', 'Steel City Static', 'Chrome Horizon', 'Woodward Thunder',
+    'Ignition Line', 'Neon Exhaust', 'Riverfront Riot', 'Eight Cylinder Heart',
+  ].map((t, i) => ({ id: `rock-${i}`, title: t, genre: 'rock', bpm: 128 + (i % 4) * 6, audioUrl: null })),
+
+  blues: [
+    'Backseat Confession', 'Low Water Blues', 'Gravel Road Sermon', 'Copper Line',
+    'Twelve Bar Sundown', 'Rust Belt Lullaby', 'Slow Burn Avenue', 'Delta to Detroit',
+  ].map((t, i) => ({ id: `blues-${i}`, title: t, genre: 'blues', bpm: 78 + (i % 4) * 4, audioUrl: null })),
+
+  rap: [
+    'City Key Cypher', 'Concrete Kingdom', 'Corner Store Legend', 'Skyline Flow',
+    'Downbeat District', 'Motor City Motive', 'Trap Plaza', 'First Gear Anthem',
+  ].map((t, i) => ({ id: `rap-${i}`, title: t, genre: 'rap', bpm: 90 + (i % 4) * 8, audioUrl: null })),
+
+  jazz: [
+    'Late Set at Hart Plaza', 'Blue Hour Sax', 'Riverside Standard', 'After Hours Avenue',
+    'Brushed Cymbal Nights', 'Uptown Interlude', 'Velvet Downtown', 'Quiet Storm Detroit',
+  ].map((t, i) => ({ id: `jazz-${i}`, title: t, genre: 'jazz', bpm: 92 + (i % 4) * 4, audioUrl: null })),
+};
 
 const ALL_SONGS = Object.values(SONG_LIBRARY).flat(); // 32 total — comfortably above the 25-30 target
 
