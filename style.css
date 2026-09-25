@@ -687,7 +687,7 @@ body::after {
   --danger: #b5482f;
 
   /* THE ACTUAL PHOTO */
-  --static-photo: url("./assets/seo/thestatic.PNG");
+  --static-photo: url("/assets/seo/thestatic.PNG");
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
