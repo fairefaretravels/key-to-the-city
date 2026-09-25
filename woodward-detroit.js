@@ -476,55 +476,184 @@ const Scene3D = {
   },
 
   buildRoad(city) {
-    const { width, length } = city.road;
-    const groundGeo = new THREE.PlaneGeometry(400, length + 200);
-    const groundMat = new THREE.MeshStandardMaterial({ color: city.palette.ground, roughness: 1 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.set(0, -0.02, -length / 2 + 100);
-    ground.receiveShadow = true;
-    this.dynamicGroup.add(ground);
+  const { width, length } = city.road;
 
-    const roadGeo = new THREE.PlaneGeometry(width, length);
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1f2126, roughness: 0.9 });
-    const road = new THREE.Mesh(roadGeo, roadMat);
-    road.rotation.x = -Math.PI / 2;
-    road.position.set(0, 0, -length / 2 + 50);
-    road.receiveShadow = true;
-    this.dynamicGroup.add(road);
+  /* =========================================================
+     GROUND
+  ========================================================= */
 
-    const dashGeo = new THREE.PlaneGeometry(0.35, 3.2);
-    const dashMat = new THREE.MeshBasicMaterial({ color: 0xd9c98a });
-    for (let z = 30; z > -length + 40; z -= 10) {
-      const dash = new THREE.Mesh(dashGeo, dashMat);
-      dash.rotation.x = -Math.PI / 2;
-      dash.position.set(0, 0.01, z);
-      this.dynamicGroup.add(dash);
-    }
+  const groundGeo = new THREE.PlaneGeometry(400, length + 200);
 
-    const curbGeo = new THREE.BoxGeometry(1, 0.25, length);
-    const curbMat = new THREE.MeshStandardMaterial({ color: 0x2b2e33 });
-    [-(width / 2 + 0.5), width / 2 + 0.5].forEach((x) => {
-      const curb = new THREE.Mesh(curbGeo, curbMat);
-      curb.position.set(x, 0.1, -length / 2 + 50);
-      curb.receiveShadow = true;
-      this.dynamicGroup.add(curb);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: city.palette.ground,
+    roughness: 1
+  });
+
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.set(0, -0.02, -length / 2 + 100);
+  ground.receiveShadow = true;
+
+  this.dynamicGroup.add(ground);
+
+
+  /* =========================================================
+     THE STATIC — REAL PHOTO PAVEMENT
+     
+     Change ONLY this filename later if you want another photo.
+  ========================================================= */
+
+  const pavementTexture = new THREE.TextureLoader().load(
+    "./thestatic.PNG"
+  );
+
+  pavementTexture.wrapS = THREE.RepeatWrapping;
+  pavementTexture.wrapT = THREE.RepeatWrapping;
+
+  /*
+     Repeat the photograph down the road.
+
+     X = across the road
+     Y = forward/back along the road
+  */
+  pavementTexture.repeat.set(
+    1,
+    Math.max(1, length / 35)
+  );
+
+  pavementTexture.colorSpace = THREE.SRGBColorSpace;
+
+  const roadGeo = new THREE.PlaneGeometry(width, length);
+
+  const roadMat = new THREE.MeshStandardMaterial({
+    map: pavementTexture,
+    color: 0xffffff,
+    roughness: 0.95,
+    metalness: 0
+  });
+
+  const road = new THREE.Mesh(roadGeo, roadMat);
+
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(0, 0, -length / 2 + 50);
+  road.receiveShadow = true;
+
+  this.dynamicGroup.add(road);
+
+
+  /* =========================================================
+     CENTER ROAD MARKINGS
+  ========================================================= */
+
+  const dashGeo = new THREE.PlaneGeometry(0.35, 3.2);
+
+  const dashMat = new THREE.MeshBasicMaterial({
+    color: 0xd9c98a
+  });
+
+  for (let z = 30; z > -length + 40; z -= 10) {
+    const dash = new THREE.Mesh(dashGeo, dashMat);
+
+    dash.rotation.x = -Math.PI / 2;
+    dash.position.set(0, 0.01, z);
+
+    this.dynamicGroup.add(dash);
+  }
+
+
+  /* =========================================================
+     CURBS
+  ========================================================= */
+
+  const curbGeo = new THREE.BoxGeometry(
+    1,
+    0.25,
+    length
+  );
+
+  const curbMat = new THREE.MeshStandardMaterial({
+    color: 0x2b2e33
+  });
+
+  [-(width / 2 + 0.5), width / 2 + 0.5].forEach((x) => {
+
+    const curb = new THREE.Mesh(
+      curbGeo,
+      curbMat
+    );
+
+    curb.position.set(
+      x,
+      0.1,
+      -length / 2 + 50
+    );
+
+    curb.receiveShadow = true;
+
+    this.dynamicGroup.add(curb);
+  });
+
+
+  /* =========================================================
+     STREET LIGHTS
+  ========================================================= */
+
+  const poleMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1c1f
+  });
+
+  const lampMat = new THREE.MeshStandardMaterial({
+    color: 0xffdca0,
+    emissive: 0xffb15c,
+    emissiveIntensity: 1.4
+  });
+
+  const sideOffset = width / 2 + 2.5;
+
+  for (let z = 20; z > -length + 40; z -= 24) {
+
+    [-sideOffset, sideOffset].forEach((x) => {
+
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(
+          0.12,
+          0.12,
+          7,
+          8
+        ),
+        poleMat
+      );
+
+      pole.position.set(
+        x,
+        3.5,
+        z
+      );
+
+      this.dynamicGroup.add(pole);
+
+
+      const lamp = new THREE.Mesh(
+        new THREE.SphereGeometry(
+          0.35,
+          8,
+          8
+        ),
+        lampMat
+      );
+
+      lamp.position.set(
+        x,
+        7,
+        z
+      );
+
+      this.dynamicGroup.add(lamp);
+
     });
-
-    const poleMat = new THREE.MeshStandardMaterial({ color: 0x1a1c1f });
-    const lampMat = new THREE.MeshStandardMaterial({ color: 0xffdca0, emissive: 0xffb15c, emissiveIntensity: 1.4 });
-    const sideOffset = width / 2 + 2.5;
-    for (let z = 20; z > -length + 40; z -= 24) {
-      [-sideOffset, sideOffset].forEach((x) => {
-        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 7, 8), poleMat);
-        pole.position.set(x, 3.5, z);
-        this.dynamicGroup.add(pole);
-        const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), lampMat);
-        lamp.position.set(x, 7, z);
-        this.dynamicGroup.add(lamp);
-      });
-    }
-  },
+  }
+},
 
   // Buildings now carry multiple lit windows per face (randomized on/off),
   // per the "put lights in the buildings" request.
