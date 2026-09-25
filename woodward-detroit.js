@@ -177,7 +177,7 @@ const CITIES = {
     unlockCost: 0, // always available
     palette: { fog: 0x0a0d13, ground: 0x14171c, accent: 0xff5533 },
     start: { x: 0, z: 0, heading: 0 },
-    road: { width: 14, length: 900 },
+    road: { width: 14, length: 1200 },
     landmarks: [
       {
         id: 'penobscot', name: 'PENOBSCOT BUILDING', position: { x: 2, z: -280 },
