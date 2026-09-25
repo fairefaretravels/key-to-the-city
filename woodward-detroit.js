@@ -51,7 +51,7 @@ const SONG_LIBRARY = {
       artist: 'Lavelle feat The Switchblades',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
+      audioUrl: '/assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
     },
     {
       id: 'alternative-1',
@@ -59,7 +59,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/4-x-4.mp3'
+      audioUrl: '/assets/music/4-x-4.mp3'
     },
     {
       id: 'alternative-2',
@@ -67,39 +67,39 @@ const SONG_LIBRARY = {
       artist: 'AL LUV FT SWITCHBLADES',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
+      audioUrl: '/assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
     },
     {
       id: 'alternative-3',
       title: 'All Dat Ass',
-      artist: 'G4E Souljah feat Seneca Mack and Uptop Gambino',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/ALL DAT ASS.mp3'
+      audioUrl: '/assets/music/ALL DAT ASS.mp3'
     },
     {
       id: 'alternative-4',
       title: 'Alexa',
-      artist: 'Brass Earthling',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/Alexa (Remastered).mp3'
+      audioUrl: '/assets/music/Alexa (Remastered).mp3'
     },
     {
       id: 'alternative-5',
       title: 'All I Have In This World',
-      artist: 'Base',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/All I have In This World.mp3'
+      audioUrl: '/assets/music/All I have In This World.mp3'
     },
     {
       id: 'alternative-6',
       title: 'Disclaimer',
-      artist: 'Brass Earthling',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: './assets/music/Disclaimer.mp3'
+      audioUrl: '/assets/music/Disclaimer.mp3'
     }
   ],
 
@@ -160,7 +160,7 @@ function getIsoWeekNumber(date = new Date()) {
 // Picks this week's "featured" track for a genre, so repeat players hear a
 // different song each week even before any real licensed tracks are added.
 function getWeeklyFeaturedTrack(genre) {
-  const pool = SONG_LIBRARY[genre] || SONG_LIBRARY.alternative;
+  const pool = SONG_LIBRARY[genre] || SONG_LIBRARY.rock;
   const week = getIsoWeekNumber();
   return pool[week % pool.length];
 }
@@ -173,7 +173,7 @@ const CITIES = {
   detroit: {
     id: 'detroit',
     name: 'Detroit',
-    genre: 'alternative',
+    genre: 'rock',
     unlockCost: 0, // always available
     palette: { fog: 0x0a0d13, ground: 0x14171c, accent: 0xff5533 },
     start: { x: 0, z: 0, heading: 0 },
@@ -1180,46 +1180,32 @@ const RadioSystem = {
   },
 
   play() {
-  const statusEl = document.getElementById('radio-status');
+    const statusEl = document.getElementById('radio-status');
+    if (!this.currentTrack.audioUrl) {
+      statusEl.textContent = `No licensed audio configured yet for "${this.currentTrack.title}". This slot is ready for a real stream/track URL.`;
+      return;
+    }
+    // encodeURI so filenames with spaces, parentheses, hyphens, and a
+    // trailing space before the extension (e.g. "...Collect The Vibe .mp3")
+    // resolve to a valid, correctly percent-encoded request path.
+    this.audioEl.src = encodeURI(this.currentTrack.audioUrl);
+    this.audioEl.play();
+    statusEl.textContent = 'Now playing: ' + this.currentTrack.title;
+  },
 
-  if (!this.currentTrack || !this.currentTrack.audioUrl) {
-    statusEl.textContent =
-      `No audio configured for "${this.currentTrack?.title || 'this track'}".`;
-    return;
-  }
-
-  const audioUrl = encodeURI(this.currentTrack.audioUrl);
-
-  console.log("WOODWARD RADIO");
-  console.log("Track:", this.currentTrack.title);
-  console.log("Audio URL:", audioUrl);
-
-  this.audioEl.pause();
-  this.audioEl.src = audioUrl;
-  this.audioEl.load();
-
-  const playPromise = this.audioEl.play();
-
-  if (playPromise !== undefined) {
-    playPromise
-      .then(() => {
-        console.log("WOODWARD RADIO: PLAYING");
-        statusEl.textContent =
-          'Now playing: ' + this.currentTrack.title;
-      })
-      .catch((error) => {
-        console.error("WOODWARD RADIO PLAY ERROR:", error);
-
-        statusEl.textContent =
-          'Audio could not play. Check the track file/path.';
-
-        console.error(
-          "Failed audio URL:",
-          audioUrl
-        );
-      });
-  }
-},
+  // Toggles the shared Audio element's muted state. Since the same audioEl
+  // instance persists across track changes (init() only creates it once),
+  // muting here stays in effect through nextTrack()/autoplay chains too.
+  toggleMute() {
+    if (!this.audioEl) return;
+    this.audioEl.muted = !this.audioEl.muted;
+    const btn = document.getElementById('radio-mute-btn');
+    if (btn) {
+      btn.textContent = this.audioEl.muted ? '🔇 UNMUTE' : '🔊 MUTE';
+      btn.classList.toggle('muted', this.audioEl.muted);
+      btn.setAttribute('aria-pressed', this.audioEl.muted ? 'true' : 'false');
+    }
+  },
 
   // `autoplay` is true when called from the 'ended' handler above, so the
   // continuous-playback chain keeps going without the player pressing Play.
@@ -1572,6 +1558,7 @@ const UI = {
       document.getElementById('radio-panel').classList.toggle('hidden'));
     document.getElementById('radio-play-btn').addEventListener('click', () => RadioSystem.play());
     document.getElementById('radio-next-btn').addEventListener('click', () => RadioSystem.nextTrack());
+    document.getElementById('radio-mute-btn').addEventListener('click', () => RadioSystem.toggleMute());
 
     document.getElementById('performance-btn').addEventListener('click', () => PerformanceSystem.start());
     document.getElementById('results-continue').addEventListener('click', () => PerformanceSystem.closeResults());

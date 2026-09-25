@@ -23,6 +23,96 @@
 <meta name="twitter:image" content="assets/seo/thestatic.PNG" />
 
 <link rel="stylesheet" href="style.css" />
+<style>
+  .radio-panel-v2 {
+    background: linear-gradient(160deg, #14171c, #0d1117);
+    border: 1px solid #d9a44144;
+    border-radius: 14px;
+    box-shadow: 0 0 24px #d9a44122, inset 0 0 40px #00000066;
+  }
+  .radio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .radio-header h2 { margin: 0; letter-spacing: 1px; }
+  .radio-mute-btn {
+    background: #1a1c1f;
+    border: 1px solid #d9a44166;
+    color: #d9a441;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font: 700 11px/1 monospace;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .radio-mute-btn.muted {
+    background: #3a1616;
+    border-color: #ff5533aa;
+    color: #ff5533;
+  }
+  .radio-dial {
+    background: #0a0d13;
+    border: 1px solid #ffffff14;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .radio-station-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .radio-live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ff5533;
+    box-shadow: 0 0 8px #ff5533;
+    animation: radio-pulse 1.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes radio-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  .radio-station-name {
+    font: 800 15px/1.2 monospace;
+    letter-spacing: 0.5px;
+    color: #f2e9d8;
+  }
+  .radio-now-playing {
+    font: 13px/1.4 monospace;
+    color: #d9a441;
+    margin-bottom: 4px;
+  }
+  .radio-status {
+    font: 11px/1.4 monospace;
+    color: #8a8f98;
+  }
+  .radio-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .radio-btn {
+    flex: 1;
+    background: #1a1c1f;
+    border: 1px solid #ffffff22;
+    color: #f2e9d8;
+    border-radius: 8px;
+    padding: 10px;
+    font: 700 12px/1 monospace;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+  .radio-btn-primary {
+    background: #d9a441;
+    color: #14171c;
+    border-color: #d9a441;
+  }
+</style>
 </head>
 <body>
 
@@ -114,13 +204,23 @@
   </div>
 
   <!-- ======================= RADIO PANEL ======================= -->
-  <div id="radio-panel" class="panel hidden">
-    <h2>RADIO</h2>
-    <div id="radio-station-name">LOADING…</div>
-    <div id="radio-now-playing"></div>
-    <div id="radio-status">Signal ready.</div>
-    <button id="radio-play-btn">▶ TUNE IN</button>
-    <button id="radio-next-btn">⏭ NEXT TRACK</button>
+  <div id="radio-panel" class="panel hidden radio-panel-v2">
+    <div class="radio-header">
+      <h2>📻 RADIO</h2>
+      <button id="radio-mute-btn" class="radio-mute-btn" aria-label="Mute radio" aria-pressed="false">🔊 MUTE</button>
+    </div>
+    <div class="radio-dial">
+      <div class="radio-station-row">
+        <span class="radio-live-dot"></span>
+        <div id="radio-station-name" class="radio-station-name">LOADING…</div>
+      </div>
+      <div id="radio-now-playing" class="radio-now-playing"></div>
+      <div id="radio-status" class="radio-status">Signal ready.</div>
+    </div>
+    <div class="radio-controls">
+      <button id="radio-play-btn" class="radio-btn radio-btn-primary">▶ TUNE IN</button>
+      <button id="radio-next-btn" class="radio-btn">⏭ NEXT TRACK</button>
+    </div>
     <button class="close-btn" data-close="radio-panel">CLOSE</button>
   </div>
   <button id="radio-toggle" aria-label="Open radio">📻</button>
