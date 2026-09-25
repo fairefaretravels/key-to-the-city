@@ -478,10 +478,9 @@ const Scene3D = {
   buildRoad(city) {
   const { width, length } = city.road;
 
-  /* =========================================================
-     GROUND
-  ========================================================= */
-
+  // =========================================================
+  // GROUND
+  // =========================================================
   const groundGeo = new THREE.PlaneGeometry(400, length + 200);
 
   const groundMat = new THREE.MeshStandardMaterial({
@@ -498,37 +497,16 @@ const Scene3D = {
   this.dynamicGroup.add(ground);
 
 
-  /* =========================================================
-     THE STATIC — REAL PHOTO PAVEMENT
-     
-     Change ONLY this filename later if you want another photo.
-  ========================================================= */
-
-  const pavementTexture = new THREE.TextureLoader().load(
-    "assets/seo/thestatic.PNG"
-  );
-
-  pavementTexture.wrapS = THREE.RepeatWrapping;
-  pavementTexture.wrapT = THREE.RepeatWrapping;
-
-  /*
-     Repeat the photograph down the road.
-
-     X = across the road
-     Y = forward/back along the road
-  */
-  pavementTexture.repeat.set(
-    1,
-    Math.max(1, length / 35)
-  );
-
-  pavementTexture.colorSpace = THREE.SRGBColorSpace;
+  // =========================================================
+  // ROAD
+  // =========================================================
 
   const roadGeo = new THREE.PlaneGeometry(width, length);
 
+  // SAFE FALLBACK:
+  // The game starts with normal pavement immediately.
   const roadMat = new THREE.MeshStandardMaterial({
-    map: pavementTexture,
-    color: 0xffffff,
+    color: 0x1f2126,
     roughness: 0.95,
     metalness: 0
   });
@@ -542,9 +520,50 @@ const Scene3D = {
   this.dynamicGroup.add(road);
 
 
-  /* =========================================================
-     CENTER ROAD MARKINGS
-  ========================================================= */
+  // =========================================================
+  // PAVEMENT PHOTO
+  // =========================================================
+  // The photo loads AFTER the road exists.
+  // If the image fails, the game continues normally.
+
+  const pavementLoader = new THREE.TextureLoader();
+
+  pavementLoader.load(
+    "./thestatic.PNG",
+
+    function(texture) {
+
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+
+      texture.repeat.set(
+        1,
+        Math.max(1, length / 35)
+      );
+
+      // Apply the photograph to the existing road.
+      road.material.map = texture;
+      road.material.needsUpdate = true;
+
+      console.log("WOODWARD pavement photo loaded.");
+    },
+
+    undefined,
+
+    function(error) {
+
+      console.warn(
+        "WOODWARD pavement photo could not load. Using fallback pavement.",
+        error
+      );
+
+    }
+  );
+
+
+  // =========================================================
+  // CENTER ROAD DASHES
+  // =========================================================
 
   const dashGeo = new THREE.PlaneGeometry(0.35, 3.2);
 
@@ -553,7 +572,11 @@ const Scene3D = {
   });
 
   for (let z = 30; z > -length + 40; z -= 10) {
-    const dash = new THREE.Mesh(dashGeo, dashMat);
+
+    const dash = new THREE.Mesh(
+      dashGeo,
+      dashMat
+    );
 
     dash.rotation.x = -Math.PI / 2;
     dash.position.set(0, 0.01, z);
@@ -562,9 +585,9 @@ const Scene3D = {
   }
 
 
-  /* =========================================================
-     CURBS
-  ========================================================= */
+  // =========================================================
+  // CURBS
+  // =========================================================
 
   const curbGeo = new THREE.BoxGeometry(
     1,
@@ -576,7 +599,10 @@ const Scene3D = {
     color: 0x2b2e33
   });
 
-  [-(width / 2 + 0.5), width / 2 + 0.5].forEach((x) => {
+  [
+    -(width / 2 + 0.5),
+    width / 2 + 0.5
+  ].forEach((x) => {
 
     const curb = new THREE.Mesh(
       curbGeo,
@@ -595,9 +621,9 @@ const Scene3D = {
   });
 
 
-  /* =========================================================
-     STREET LIGHTS
-  ========================================================= */
+  // =========================================================
+  // STREET LIGHTS
+  // =========================================================
 
   const poleMat = new THREE.MeshStandardMaterial({
     color: 0x1a1c1f
