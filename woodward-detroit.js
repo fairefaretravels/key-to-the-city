@@ -12,7 +12,7 @@
        ready for real licensed audio later
      - A garage: vehicle type, paint color, and a custom license plate
        rendered onto the car itself
- 
+
    SECTION MAP:
      1. SONG LIBRARY
      2. CITY DATA
@@ -29,18 +29,21 @@
     13. UI GLUE
     14. GAME LOOP
 ============================================================================ */
+
 /* ============================================================================
    1. SONG LIBRARY
    ----------------------------------------------------------------------------
-   8 Mile Radio currently uses the Alternative playlist and the real MP3 files
-   below. The other genres remain available for the game's future radio/QTE
-   systems.
+   Placeholder track metadata only — original titles, no real artists, no
+   lyrics. `audioUrl` is the slot for a real, licensed track later; until
+   then the QTE note pattern is generated procedurally from `bpm` + `seed`
+   so the minigame is fully playable without audio.
+   A 30-track library keeps any one city from looping the same 2-3 songs
+   into the ground. `getWeeklyRotation()` reshuffles which tracks are
+   "featured" based on the calendar week, as a hook for dropping in new
+   licensed songs on a cadence without touching game code.
 ============================================================================ */
 
 const SONG_LIBRARY = {
-  /* =========================
-     8 MILE RADIO — ALTERNATIVE
-  ========================= */
   alternative: [
     {
       id: 'alternative-0',
@@ -48,69 +51,61 @@ const SONG_LIBRARY = {
       artist: 'Lavelle feat The Switchblades',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
+      audioUrl: '/assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
     },
     {
       id: 'alternative-1',
       title: '4-X-4',
-      artist: 'Brass Earthling',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/4-x-4.mp3'
+      audioUrl: '/assets/music/4-x-4.mp3'
     },
     {
       id: 'alternative-2',
       title: 'Throwback',
-      artist: 'Al Luv FT The Switchblades',
+      artist: 'AL LUV FT SWITCHBLADES',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
+      audioUrl: '/assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
     },
     {
       id: 'alternative-3',
       title: 'All Dat Ass',
-      artist: 'G4E Souljah feat. Seneca Mack Uptop Gambino',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/ALL DAT ASS.mp3'
+      audioUrl: '/assets/music/ALL DAT ASS.mp3'
     },
     {
       id: 'alternative-4',
       title: 'Alexa',
-      artist: 'Brass Earthling',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/Alexa (Remastered).mp3'
+      audioUrl: '/assets/music/Alexa (Remastered).mp3'
     },
     {
       id: 'alternative-5',
       title: 'All I Have In This World',
-      artist: 'Base',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/All I have In This World.mp3'
+      audioUrl: '/assets/music/All I have In This World.mp3'
     },
     {
       id: 'alternative-6',
       title: 'Disclaimer',
-      artist: 'Brass Earthling',
+      artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: 'assets/music/Disclaimer.mp3'
+      audioUrl: '/assets/music/Disclaimer.mp3'
     }
   ],
-  /* =========================
-     ROCK
-  ========================= */
+
   rock: [
-    'Midnight Overdrive',
-    'Steel City Static',
-    'Chrome Horizon',
-    'Woodward Thunder',
-    'Ignition Line',
-    'Neon Exhaust',
-    'Riverfront Riot',
-    'Eight Cylinder Heart'
+    'Midnight Overdrive', 'Steel City Static', 'Chrome Horizon', 'Woodward Thunder',
+    'Ignition Line', 'Neon Exhaust', 'Riverfront Riot', 'Eight Cylinder Heart',
   ].map((t, i) => ({
     id: `rock-${i}`,
     title: t,
@@ -118,18 +113,10 @@ const SONG_LIBRARY = {
     bpm: 128 + (i % 4) * 6,
     audioUrl: null
   })),
-  /* =========================
-     BLUES
-  ========================= */
+
   blues: [
-    'Backseat Confession',
-    'Low Water Blues',
-    'Gravel Road Sermon',
-    'Copper Line',
-    'Twelve Bar Sundown',
-    'Rust Belt Lullaby',
-    'Slow Burn Avenue',
-    'Delta to Detroit'
+    'Backseat Confession', 'Low Water Blues', 'Gravel Road Sermon', 'Copper Line',
+    'Twelve Bar Sundown', 'Rust Belt Lullaby', 'Slow Burn Avenue', 'Delta to Detroit',
   ].map((t, i) => ({
     id: `blues-${i}`,
     title: t,
@@ -137,18 +124,10 @@ const SONG_LIBRARY = {
     bpm: 78 + (i % 4) * 4,
     audioUrl: null
   })),
-  /* =========================
-     RAP
-  ========================= */
+
   rap: [
-    'City Key Cypher',
-    'Concrete Kingdom',
-    'Corner Store Legend',
-    'Skyline Flow',
-    'Downbeat District',
-    'Motor City Motive',
-    'Trap Plaza',
-    'First Gear Anthem'
+    'City Key Cypher', 'Concrete Kingdom', 'Corner Store Legend', 'Skyline Flow',
+    'Downbeat District', 'Motor City Motive', 'Trap Plaza', 'First Gear Anthem',
   ].map((t, i) => ({
     id: `rap-${i}`,
     title: t,
@@ -156,18 +135,10 @@ const SONG_LIBRARY = {
     bpm: 90 + (i % 4) * 8,
     audioUrl: null
   })),
-  /* =========================
-     JAZZ
-  ========================= */
+
   jazz: [
-    'Late Set at Hart Plaza',
-    'Blue Hour Sax',
-    'Riverside Standard',
-    'After Hours Avenue',
-    'Brushed Cymbal Nights',
-    'Uptown Interlude',
-    'Velvet Downtown',
-    'Quiet Storm Detroit'
+    'Late Set at Hart Plaza', 'Blue Hour Sax', 'Riverside Standard', 'After Hours Avenue',
+    'Brushed Cymbal Nights', 'Uptown Interlude', 'Velvet Downtown', 'Quiet Storm Detroit',
   ].map((t, i) => ({
     id: `jazz-${i}`,
     title: t,
@@ -176,41 +147,7 @@ const SONG_LIBRARY = {
     audioUrl: null
   }))
 };
-/* ============================================================================
-   ALL SONGS
-============================================================================ */
-const ALL_SONGS = Object.values(SONG_LIBRARY).flat();
-/* ============================================================================
-   WEEKLY FEATURED TRACK
-   ----------------------------------------------------------------------------
-   Kept for the existing game systems. It does NOT control 8 Mile Radio.
-============================================================================ */
-function getIsoWeekNumber(date = new Date()) {
-  const d = new Date(
-    Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    )
-  );
-  d.setUTCDate(
-    d.getUTCDate() + 4 - (d.getUTCDay() || 7)
-  );
-  const yearStart = new Date(
-    Date.UTC(d.getUTCFullYear(), 0, 1)
-  );
-  return Math.ceil(
-    ((d - yearStart) / 86400000 + 1) / 7
-  );
-}
-function getWeeklyFeaturedTrack(genre) {
-  const pool = SONG_LIBRARY[genre];
-  if (!pool || !pool.length) {
-    return SONG_LIBRARY.alternative[0];
-  }
-  const week = getIsoWeekNumber();
-  return pool[week % pool.length];
-}
+
 const ALL_SONGS = Object.values(SONG_LIBRARY).flat();
 
 function getIsoWeekNumber(date = new Date()) {
@@ -235,8 +172,8 @@ function getWeeklyFeaturedTrack(genre) {
 const CITIES = {
   detroit: {
     id: 'detroit',
-    name: 'The Static',
-    genre: 'alternative',
+    name: 'Detroit',
+    genre: 'rock',
     unlockCost: 0, // always available
     palette: { fog: 0x0a0d13, ground: 0x14171c, accent: 0xff5533 },
     start: { x: 0, z: 0, heading: 0 },
@@ -508,170 +445,55 @@ const Scene3D = {
   },
 
   buildRoad(city) {
-  const { width, length } = city.road;
+    const { width, length } = city.road;
+    const groundGeo = new THREE.PlaneGeometry(400, length + 200);
+    const groundMat = new THREE.MeshStandardMaterial({ color: city.palette.ground, roughness: 1 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set(0, -0.02, -length / 2 + 100);
+    ground.receiveShadow = true;
+    this.dynamicGroup.add(ground);
 
-  // =========================================================
-  // GROUND
-  // =========================================================
-  const groundGeo = new THREE.PlaneGeometry(400, length + 200);
+    const roadGeo = new THREE.PlaneGeometry(width, length);
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1f2126, roughness: 0.9 });
+    const road = new THREE.Mesh(roadGeo, roadMat);
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, 0, -length / 2 + 50);
+    road.receiveShadow = true;
+    this.dynamicGroup.add(road);
 
-  const groundMat = new THREE.MeshStandardMaterial({
-    color: city.palette.ground,
-    roughness: 1
-  });
+    const dashGeo = new THREE.PlaneGeometry(0.35, 3.2);
+    const dashMat = new THREE.MeshBasicMaterial({ color: 0xd9c98a });
+    for (let z = 30; z > -length + 40; z -= 10) {
+      const dash = new THREE.Mesh(dashGeo, dashMat);
+      dash.rotation.x = -Math.PI / 2;
+      dash.position.set(0, 0.01, z);
+      this.dynamicGroup.add(dash);
+    }
 
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.set(0, -0.02, -length / 2 + 100);
-  ground.receiveShadow = true;
-
-  this.dynamicGroup.add(ground);
-
-
-  // =========================================================
-  // ROAD
-  // =========================================================
-
-  const roadGeo = new THREE.PlaneGeometry(width, length);
-
-  // SAFE FALLBACK:
-  // The game starts with normal pavement immediately.
-  const roadMat = new THREE.MeshStandardMaterial({
-    color: 0x1f2126,
-    roughness: 0.95,
-    metalness: 0
-  });
-
-  const road = new THREE.Mesh(roadGeo, roadMat);
-
-  road.rotation.x = -Math.PI / 2;
-  road.position.set(0, 0, -length / 2 + 50);
-  road.receiveShadow = true;
-
-  this.dynamicGroup.add(road);
-
-
-
-  // =========================================================
-  // CENTER ROAD DASHES
-  // =========================================================
-
-  const dashGeo = new THREE.PlaneGeometry(0.35, 3.2);
-
-  const dashMat = new THREE.MeshBasicMaterial({
-    color: 0xd9c98a
-  });
-
-  for (let z = 30; z > -length + 40; z -= 10) {
-
-    const dash = new THREE.Mesh(
-      dashGeo,
-      dashMat
-    );
-
-    dash.rotation.x = -Math.PI / 2;
-    dash.position.set(0, 0.01, z);
-
-    this.dynamicGroup.add(dash);
-  }
-
-
-  // =========================================================
-  // CURBS
-  // =========================================================
-
-  const curbGeo = new THREE.BoxGeometry(
-    1,
-    0.25,
-    length
-  );
-
-  const curbMat = new THREE.MeshStandardMaterial({
-    color: 0x2b2e33
-  });
-
-  [
-    -(width / 2 + 0.5),
-    width / 2 + 0.5
-  ].forEach((x) => {
-
-    const curb = new THREE.Mesh(
-      curbGeo,
-      curbMat
-    );
-
-    curb.position.set(
-      x,
-      0.1,
-      -length / 2 + 50
-    );
-
-    curb.receiveShadow = true;
-
-    this.dynamicGroup.add(curb);
-  });
-
-
-  // =========================================================
-  // STREET LIGHTS
-  // =========================================================
-
-  const poleMat = new THREE.MeshStandardMaterial({
-    color: 0x1a1c1f
-  });
-
-  const lampMat = new THREE.MeshStandardMaterial({
-    color: 0xffdca0,
-    emissive: 0xffb15c,
-    emissiveIntensity: 1.4
-  });
-
-  const sideOffset = width / 2 + 2.5;
-
-  for (let z = 20; z > -length + 40; z -= 24) {
-
-    [-sideOffset, sideOffset].forEach((x) => {
-
-      const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(
-          0.12,
-          0.12,
-          7,
-          8
-        ),
-        poleMat
-      );
-
-      pole.position.set(
-        x,
-        3.5,
-        z
-      );
-
-      this.dynamicGroup.add(pole);
-
-
-      const lamp = new THREE.Mesh(
-        new THREE.SphereGeometry(
-          0.35,
-          8,
-          8
-        ),
-        lampMat
-      );
-
-      lamp.position.set(
-        x,
-        7,
-        z
-      );
-
-      this.dynamicGroup.add(lamp);
-
+    const curbGeo = new THREE.BoxGeometry(1, 0.25, length);
+    const curbMat = new THREE.MeshStandardMaterial({ color: 0x2b2e33 });
+    [-(width / 2 + 0.5), width / 2 + 0.5].forEach((x) => {
+      const curb = new THREE.Mesh(curbGeo, curbMat);
+      curb.position.set(x, 0.1, -length / 2 + 50);
+      curb.receiveShadow = true;
+      this.dynamicGroup.add(curb);
     });
-  }
-},
+
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x1a1c1f });
+    const lampMat = new THREE.MeshStandardMaterial({ color: 0xffdca0, emissive: 0xffb15c, emissiveIntensity: 1.4 });
+    const sideOffset = width / 2 + 2.5;
+    for (let z = 20; z > -length + 40; z -= 24) {
+      [-sideOffset, sideOffset].forEach((x) => {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 7, 8), poleMat);
+        pole.position.set(x, 3.5, z);
+        this.dynamicGroup.add(pole);
+        const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), lampMat);
+        lamp.position.set(x, 7, z);
+        this.dynamicGroup.add(lamp);
+      });
+    }
+  },
 
   // Buildings now carry multiple lit windows per face (randomized on/off),
   // per the "put lights in the buildings" request.
@@ -1318,182 +1140,68 @@ const DiscoverySystem = {
 /* ============================================================================
    9. RADIO SYSTEM
    ----------------------------------------------------------------------------
-   Current development station:
-     8 Mile Radio -> Alternative -> real MP3 playlist
-   The same song object controls BOTH:
-     - what is displayed in "Now Playing"
-     - what audio file is actually played
-   Other station/genre behavior remains available for future expansion.
+   Station -> genre -> SONG_LIBRARY playlist mapping. Each station may
+   declare its own `genre`; if it doesn't, it falls back to the current
+   city's genre (the original behavior for rock/blues/rap/jazz stations).
+   "8 Mile Radio" declares `genre: 'alternative'` in CITIES.detroit, which
+   is the connection that routes it to the seven real MP3s.
 ============================================================================ */
+
 const RadioSystem = {
-  currentStation: null,
-  audioEl: null,
-  currentTrack: null,
-  currentIndex: 0,
-  initialized: false,
+  currentStation: null, audioEl: null, currentTrack: null,
+
   init() {
-    this.currentStation = currentCity.radioStations.find(
-      station => station.genre === 'alternative'
-    ) || currentCity.radioStations[0];
+    this.currentStation = currentCity.radioStations[0];
     this.audioEl = new Audio();
-    this.audioEl.preload = 'auto';
-    /*
-      Start 8 Mile Radio with the FIRST REAL ALTERNATIVE TRACK.
-      This intentionally does NOT use getWeeklyFeaturedTrack().
-      We want predictable testing right now.
-    */
-    const playlist = this.getStationPlaylist(this.currentStation);
-    this.currentIndex = 0;
-    this.currentTrack = playlist[0] || null;
-    if (!this.currentTrack) {
-      console.error('RadioSystem: No tracks found for station.');
-      return;
-    }
-    this.audioEl.addEventListener('ended', () => {
-      this.nextTrack(true);
-    });
-    this.audioEl.addEventListener('error', () => {
-      const statusEl = document.getElementById('radio-status');
-      if (statusEl) {
-        statusEl.textContent =
-          `Unable to load "${this.currentTrack.title}". Check the MP3 file path.`;
-      }
-      console.error(
-        'Radio audio error:',
-        this.currentTrack.audioUrl
-      );
-    });
-    this.renderStation();
+    this.currentTrack = getWeeklyFeaturedTrack(this.getStationGenre(this.currentStation));
+    document.getElementById('radio-station-name').textContent = this.currentStation.name;
     this.renderNowPlaying();
-    this.bindControls();
-    this.initialized = true;
+
+    // Continuous playback: once the current track finishes, automatically
+    // advance to the next track in this station's playlist and keep playing,
+    // looping back to the start of the playlist indefinitely.
+    this.audioEl.addEventListener('ended', () => this.nextTrack(true));
   },
-  /* --------------------------------------------------------------------------
-     STATION
-  -------------------------------------------------------------------------- */
+
+  // Resolves which SONG_LIBRARY genre a station plays. A station's own
+  // `genre` field wins (this is how "8 Mile Radio" -> 'alternative' is
+  // wired); stations without one keep the original city-genre behavior.
   getStationGenre(station) {
     return (station && station.genre) || currentCity.genre;
   },
+
   getStationPlaylist(station) {
-    const genre = this.getStationGenre(station);
-    return SONG_LIBRARY[genre] || [];
+    return SONG_LIBRARY[this.getStationGenre(station)] || SONG_LIBRARY[currentCity.genre];
   },
-  renderStation() {
-    const stationEl =
-      document.getElementById('radio-station-name');
-    if (!stationEl || !this.currentStation) return;
-    stationEl.textContent = this.currentStation.name;
-  },
-  /* --------------------------------------------------------------------------
-     NOW PLAYING
-  -------------------------------------------------------------------------- */
+
   renderNowPlaying() {
-    const nowPlayingEl =
-      document.getElementById('radio-now-playing');
-    if (!nowPlayingEl || !this.currentTrack) return;
-    const artist = this.currentTrack.artist
-      ? ` — ${this.currentTrack.artist}`
-      : '';
-    nowPlayingEl.textContent =
-      `${this.currentTrack.title}${artist}`;
+    document.getElementById('radio-now-playing').textContent =
+      `This week: "${this.currentTrack.title}" (${this.currentTrack.genre})`;
   },
-  /* --------------------------------------------------------------------------
-     TUNE IN / PLAY
-  -------------------------------------------------------------------------- */
-  async play() {
-    const statusEl =
-      document.getElementById('radio-status');
-    if (!this.currentTrack) {
-      if (statusEl) {
-        statusEl.textContent =
-          'No track selected.';
-      }
-      return;
-    }
+
+  play() {
+    const statusEl = document.getElementById('radio-status');
     if (!this.currentTrack.audioUrl) {
-      if (statusEl) {
-        statusEl.textContent =
-          `No audio file configured for "${this.currentTrack.title}".`;
-      }
+      statusEl.textContent = `No licensed audio configured yet for "${this.currentTrack.title}". This slot is ready for a real stream/track URL.`;
       return;
     }
-    /*
-      Set the actual MP3 URL.
-    */
-    this.audioEl.src =
-      encodeURI(this.currentTrack.audioUrl);
-    /*
-      Update the display BEFORE attempting playback.
-    */
-    this.renderNowPlaying();
-    try {
-      await this.audioEl.play();
-      if (statusEl) {
-        statusEl.textContent =
-          `Playing: ${this.currentTrack.title}`;
-      }
-      console.log(
-        '8 Mile Radio playing:',
-        this.currentTrack.title,
-        this.currentTrack.audioUrl
-      );
-    } catch (error) {
-      console.error(
-        'Radio playback failed:',
-        error
-      );
-      if (statusEl) {
-        statusEl.textContent =
-          `Playback failed: ${error.message}`;
-      }
-    }
+    // encodeURI so filenames with spaces, parentheses, hyphens, and a
+    // trailing space before the extension (e.g. "...Collect The Vibe .mp3")
+    // resolve to a valid, correctly percent-encoded request path.
+    this.audioEl.src = encodeURI(this.currentTrack.audioUrl);
+    this.audioEl.play();
+    statusEl.textContent = 'Now playing: ' + this.currentTrack.title;
   },
-  /* --------------------------------------------------------------------------
-     NEXT TRACK
-  -------------------------------------------------------------------------- */
-  nextTrack(autoplay = false) {
-    const playlist =
-      this.getStationPlaylist(this.currentStation);
-    if (!playlist.length) {
-      console.error(
-        'RadioSystem: Station playlist is empty.'
-      );
-      return;
-    }
-    this.currentIndex =
-      (this.currentIndex + 1) % playlist.length;
-    this.currentTrack =
-      playlist[this.currentIndex];
+
+  // `autoplay` is true when called from the 'ended' handler above, so the
+  // continuous-playback chain keeps going without the player pressing Play.
+  nextTrack(autoplay) {
+    const pool = this.getStationPlaylist(this.currentStation);
+    const idx = pool.findIndex((t) => t.id === this.currentTrack.id);
+    this.currentTrack = pool[(idx + 1) % pool.length];
     this.renderNowPlaying();
-    if (autoplay) {
-      this.play();
-    }
+    if (autoplay) this.play();
   },
-  /* --------------------------------------------------------------------------
-     RADIO BUTTONS
-  -------------------------------------------------------------------------- */
-  bindControls() {
-    const playBtn =
-      document.getElementById('radio-play-btn');
-    const nextBtn =
-      document.getElementById('radio-next-btn');
-    /*
-      Prevent duplicate listeners if RadioSystem.init()
-      happens more than once.
-    */
-    if (playBtn && !playBtn.dataset.radioBound) {
-      playBtn.addEventListener('click', () => {
-        this.play();
-      });
-      playBtn.dataset.radioBound = 'true';
-    }
-    if (nextBtn && !nextBtn.dataset.radioBound) {
-      nextBtn.addEventListener('click', () => {
-        this.nextTrack(true);
-      });
-      nextBtn.dataset.radioBound = 'true';
-    }
-  }
 };
 
 /* ============================================================================
@@ -1881,74 +1589,44 @@ const UI = {
 
 const Game = {
   init() {
-  console.log('1: before ProgressManager.load');
-  ProgressManager.load();
-  console.log('2: before Scene3D.init');
-  Scene3D.init();
-  console.log('3: before Vehicle.init');
-  Vehicle.init();
-  console.log('4: before Input.init');
-  Input.init();
-  console.log('5: before RadioSystem.init');
-  RadioSystem.init();
-  console.log('6: before UI.init');
-  UI.init();
-  console.log('7: all init calls succeeded');
+    ProgressManager.load();
+    Scene3D.init();
+    Vehicle.init();
+    Input.init();
+    RadioSystem.init();
+    UI.init();
 
-  document.getElementById('loading-screen').classList.add('hidden');
-  requestAnimationFrame(() => this.loop());
-},
-
-      console.log("WOODWARD READY");
-
-      requestAnimationFrame(() => this.loop());
-
-    } catch (error) {
-      console.error("WOODWARD STARTUP ERROR:", error);
-      console.error(error.stack);
-    }
+    document.getElementById('loading-screen').classList.add('hidden');
+    requestAnimationFrame(() => this.loop());
   },
 
   loop() {
     const dt = Math.min(Scene3D.clock.getDelta(), 0.05);
 
     if (!Vehicle.frozen && !PerformanceSystem.active) {
+      // Input.steering resolves keyboard vs. steering-wheel input into one
+      // normalized value; mirror it onto state so Vehicle.update sees it
+      // alongside accel/brake in a single object, as before.
       Input.state.steering = Input.steering;
       Vehicle.update(dt, Input.state);
       DiscoverySystem.checkProximity();
     }
-
     NPCSystem.update(dt);
     TrafficSystem.update(dt);
 
     this.updateCamera();
-
-    Scene3D.renderer.render(
-      Scene3D.scene,
-      Scene3D.camera
-    );
-
+    Scene3D.renderer.render(Scene3D.scene, Scene3D.camera);
     requestAnimationFrame(() => this.loop());
   },
 
   updateCamera() {
     const behind = new THREE.Vector3(
-      -Math.sin(Vehicle.heading) * 8,
-      4.2,
-      -Math.cos(Vehicle.heading) * 8
+      -Math.sin(Vehicle.heading) * 8, 4.2, -Math.cos(Vehicle.heading) * 8
     );
-
     const desired = Vehicle.position.clone().add(behind);
-
-    Scene3D.camera.position.lerp(
-      desired,
-      0.08
-    );
-
+    Scene3D.camera.position.lerp(desired, 0.08);
     const lookTarget = Vehicle.position.clone();
-
     lookTarget.y += 1.2;
-
     Scene3D.camera.lookAt(lookTarget);
   },
 };
