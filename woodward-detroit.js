@@ -1880,51 +1880,80 @@ const UI = {
 
 const Game = {
   init() {
-    ProgressManager.load();
+    console.log("WOODWARD STARTING...");
 
     try {
+      console.log("1. ProgressManager");
+      ProgressManager.load();
+
+      console.log("2. Scene3D");
       Scene3D.init();
-      console.log("WOODWARD: Scene3D initialized");
+
+      console.log("3. Vehicle");
+      Vehicle.init();
+
+      console.log("4. Input");
+      Input.init();
+
+      console.log("5. RadioSystem");
+      RadioSystem.init();
+
+      console.log("6. UI");
+      UI.init();
+
+      console.log("7. HIDING LOADING SCREEN");
+      document.getElementById('loading-screen').classList.add('hidden');
+
+      console.log("WOODWARD READY");
+
+      requestAnimationFrame(() => this.loop());
+
     } catch (error) {
-      console.error("WOODWARD: Scene3D FAILED", error);
+      console.error("WOODWARD STARTUP ERROR:", error);
+      console.error(error.stack);
     }
-
-    Vehicle.init();
-    Input.init();
-    RadioSystem.init();
-    UI.init();
-
-    document.getElementById('loading-screen').classList.add('hidden');
-    requestAnimationFrame(() => this.loop());
   },
 
   loop() {
     const dt = Math.min(Scene3D.clock.getDelta(), 0.05);
 
     if (!Vehicle.frozen && !PerformanceSystem.active) {
-      // Input.steering resolves keyboard vs. steering-wheel input into one
-      // normalized value; mirror it onto state so Vehicle.update sees it
-      // alongside accel/brake in a single object, as before.
       Input.state.steering = Input.steering;
       Vehicle.update(dt, Input.state);
       DiscoverySystem.checkProximity();
     }
+
     NPCSystem.update(dt);
     TrafficSystem.update(dt);
 
     this.updateCamera();
-    Scene3D.renderer.render(Scene3D.scene, Scene3D.camera);
+
+    Scene3D.renderer.render(
+      Scene3D.scene,
+      Scene3D.camera
+    );
+
     requestAnimationFrame(() => this.loop());
   },
 
   updateCamera() {
     const behind = new THREE.Vector3(
-      -Math.sin(Vehicle.heading) * 8, 4.2, -Math.cos(Vehicle.heading) * 8
+      -Math.sin(Vehicle.heading) * 8,
+      4.2,
+      -Math.cos(Vehicle.heading) * 8
     );
+
     const desired = Vehicle.position.clone().add(behind);
-    Scene3D.camera.position.lerp(desired, 0.08);
+
+    Scene3D.camera.position.lerp(
+      desired,
+      0.08
+    );
+
     const lookTarget = Vehicle.position.clone();
+
     lookTarget.y += 1.2;
+
     Scene3D.camera.lookAt(lookTarget);
   },
 };
