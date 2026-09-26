@@ -1366,81 +1366,294 @@ const CoinSystem = {
 /* ============================================================================
    9. RADIO SYSTEM
    ----------------------------------------------------------------------------
-   Station -> genre -> SONG_LIBRARY playlist mapping. Each station may
-   declare its own `genre`; if it doesn't, it falls back to the current
-   city's genre (the original behavior for rock/blues/rap/jazz stations).
-   "8 Mile Radio" declares `genre: 'alternative'` in CITIES.detroit, which
-   is the connection that routes it to the seven real MP3s.
+   Station -> genre -> SONG_LIBRARY playlist mapping.
+   Audio paths are relative to the game so GitHub Pages project hosting works.
 ============================================================================ */
 
 const RadioSystem = {
-  currentStation: null, audioEl: null, currentTrack: null,
+  currentStation: null,
+  audioEl: null,
+  currentTrack: null,
+  isPlaying: false,
 
   init() {
-    this.currentStation = currentCity.radioStations[0];
-    this.audioEl = new Audio();
-    this.currentTrack = getWeeklyFeaturedTrack(this.getStationGenre(this.currentStation));
-    document.getElementById('radio-station-name').textContent = this.currentStation.name;
-    this.renderNowPlaying();
+    // Stop any previous radio instance before rebuilding it.
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.removeAttribute('src');
+      this.audioEl.load();
+    }
 
-    // Continuous playback: once the current track finishes, automatically
-    // advance to the next track in this station's playlist and keep playing,
-    // looping back to the start of the playlist indefinitely.
-    this.audioEl.addEventListener('ended', () => this.nextTrack(true));
+    this.currentStation = currentCity.radioStations[0];
+
+    const genre = this.getStationGenre(this.currentStation);
+    const playlist = this.getStationPlaylist(this.currentStation);
+
+    this.currentTrack =
+      getWeeklyFeaturedTrack(genre) || playlist[0] || null;
+
+    this.audioEl = new Audio();
+    this.audioEl.preload = 'auto';
+    this.audioEl.volume = 0.85;
+
+    this.audioEl.addEventListener('ended', () => {
+      this.nextTrack(true);
+    });
+
+    this.audioEl.addEventListener('error', () => {
+      const statusEl = document.getElementById('radio-status');
+
+      if (statusEl) {
+        statusEl.textContent =
+          `Audio file could not be loaded: ${this.currentTrack?.title || 'Unknown track'}`;
+      }
+
+      console.error(
+        'RADIO AUDIO ERROR:',
+        this.currentTrack?.audioUrl,
+        this.audioEl.error
+      );
+    });
+
+    const stationEl = document.getElementById('radio-station-name');
+    if (stationEl) {
+      stationEl.textContent = this.currentStation.name;
+    }
+
+    this.renderNowPlaying();
+    this.updatePlayButton();
   },
 
-  // Resolves which SONG_LIBRARY genre a station plays. A station's own
-  // `genre` field wins (this is how "8 Mile Radio" -> 'alternative' is
-  // wired); stations without one keep the original city-genre behavior.
   getStationGenre(station) {
     return (station && station.genre) || currentCity.genre;
   },
 
   getStationPlaylist(station) {
-    return SONG_LIBRARY[this.getStationGenre(station)] || SONG_LIBRARY[currentCity.genre];
+    return (
+      SONG_LIBRARY[this.getStationGenre(station)] ||
+      SONG_LIBRARY[currentCity.genre] ||
+      []
+    );
   },
 
   renderNowPlaying() {
-    document.getElementById('radio-now-playing').textContent =
-      `This week: "${this.currentTrack.title}" (${this.currentTrack.genre})`;
+    const el = document.getElementById('radio-now-playing');
+
+    if (!el || !this.currentTrack) return;
+
+    el.textContent =
+      `${this.currentTrack.title}` +
+      (this.currentTrack.artist
+        ? ` — ${this.currentTrack.artist}`
+        : '');
   },
 
-  play() {
+  getAudioUrl(track) {
+    if (!track || !track.audioUrl) return null;
+
+    /*
+      Keep audio paths relative to the game.
+
+      This works on:
+      /key-to-the-city/
+      /key-to-the-city/anything/
+      and local development.
+    */
+    if (track.audioUrl.startsWith('/assets/')) {
+      return `.${track.audioUrl}`;
+    }
+
+    return track.audioUrl;
+  },
+
+  async play() {
+    if (!this.audioEl || !this.currentTrack) {
+      this.init();
+    }
+
     const statusEl = document.getElementById('radio-status');
-    if (!this.currentTrack.audioUrl) {
-      statusEl.textContent = `No licensed audio configured yet for "${this.currentTrack.title}". This slot is ready for a real stream/track URL.`;
+
+    const audioUrl = this.getAudioUrl(this.currentTrack);
+
+    if (!audioUrl) {
+      if (statusEl) {
+        statusEl.textContent =
+          `No audio configured for "${this.currentTrack.title}".`;
+      }
       return;
     }
-    // encodeURI so filenames with spaces, parentheses, hyphens, and a
-    // trailing space before the extension (e.g. "...Collect The Vibe .mp3")
-    // resolve to a valid, correctly percent-encoded request path.
-    this.audioEl.src = encodeURI(this.currentTrack.audioUrl);
-    this.audioEl.play();
-    statusEl.textContent = 'Now playing: ' + this.currentTrack.title;
-  },
 
-  // Toggles the shared Audio element's muted state. Since the same audioEl
-  // instance persists across track changes (init() only creates it once),
-  // muting here stays in effect through nextTrack()/autoplay chains too.
-  toggleMute() {
-    if (!this.audioEl) return;
-    this.audioEl.muted = !this.audioEl.muted;
-    const btn = document.getElementById('radio-mute-btn');
-    if (btn) {
-      btn.textContent = this.audioEl.muted ? '🔇 UNMUTE' : '🔊 MUTE';
-      btn.classList.toggle('muted', this.audioEl.muted);
-      btn.setAttribute('aria-pressed', this.audioEl.muted ? 'true' : 'false');
+    // Only load a new source when the track changed.
+    if (this.audioEl.src !== new URL(audioUrl, window.location.href).href) {
+      this.audioEl.src = audioUrl;
+      this.audioEl.load();
+    }
+
+    try {
+      await this.audioEl.play();
+
+      this.isPlaying = true;
+
+      if (statusEl) {
+        statusEl.textContent =
+          `NOW PLAYING: ${this.currentTrack.title}`;
+      }
+
+      this.updatePlayButton();
+
+      console.log(
+        'RADIO PLAYING:',
+        this.currentTrack.title,
+        this.audioEl.src
+      );
+
+    } catch (error) {
+      this.isPlaying = false;
+
+      console.error('RADIO PLAY FAILED:', error);
+
+      if (statusEl) {
+        statusEl.textContent =
+          'Press PLAY again to start the radio.';
+      }
+
+      this.updatePlayButton();
     }
   },
 
-  // `autoplay` is true when called from the 'ended' handler above, so the
-  // continuous-playback chain keeps going without the player pressing Play.
-  nextTrack(autoplay) {
+  pause() {
+    if (!this.audioEl) return;
+
+    this.audioEl.pause();
+    this.isPlaying = false;
+
+    const statusEl = document.getElementById('radio-status');
+
+    if (statusEl) {
+      statusEl.textContent = 'RADIO PAUSED';
+    }
+
+    this.updatePlayButton();
+  },
+
+  togglePlay() {
+    if (!this.audioEl) {
+      this.play();
+      return;
+    }
+
+    if (this.audioEl.paused) {
+      this.play();
+    } else {
+      this.pause();
+    }
+  },
+
+  updatePlayButton() {
+    const btn = document.getElementById('radio-play-btn');
+
+    if (!btn) return;
+
+    btn.textContent = this.isPlaying
+      ? '⏸ PAUSE'
+      : '▶ PLAY';
+
+    btn.setAttribute(
+      'aria-pressed',
+      this.isPlaying ? 'true' : 'false'
+    );
+  },
+
+  toggleMute() {
+    if (!this.audioEl) return;
+
+    this.audioEl.muted = !this.audioEl.muted;
+
+    const btn = document.getElementById('radio-mute-btn');
+
+    if (btn) {
+      btn.textContent = this.audioEl.muted
+        ? '🔇 UNMUTE'
+        : '🔊 MUTE';
+
+      btn.classList.toggle('muted', this.audioEl.muted);
+
+      btn.setAttribute(
+        'aria-pressed',
+        this.audioEl.muted ? 'true' : 'false'
+      );
+    }
+  },
+
+  nextTrack(autoplay = false) {
     const pool = this.getStationPlaylist(this.currentStation);
-    const idx = pool.findIndex((t) => t.id === this.currentTrack.id);
-    this.currentTrack = pool[(idx + 1) % pool.length];
+
+    if (!pool.length) return;
+
+    const idx = pool.findIndex(
+      (track) => track.id === this.currentTrack?.id
+    );
+
+    this.currentTrack =
+      pool[(idx + 1) % pool.length];
+
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.removeAttribute('src');
+      this.audioEl.load();
+    }
+
+    this.isPlaying = false;
+
     this.renderNowPlaying();
-    if (autoplay) this.play();
+    this.updatePlayButton();
+
+    if (autoplay) {
+      this.play();
+    }
+  },
+
+  tune(stationId) {
+    const stations = currentCity.radioStations || [];
+
+    const station =
+      stations.find((s) => s.id === stationId) ||
+      stations[0];
+
+    if (!station) return;
+
+    const wasPlaying =
+      this.audioEl && !this.audioEl.paused;
+
+    this.currentStation = station;
+
+    const playlist = this.getStationPlaylist(station);
+
+    this.currentTrack =
+      getWeeklyFeaturedTrack(this.getStationGenre(station)) ||
+      playlist[0];
+
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.removeAttribute('src');
+      this.audioEl.load();
+    }
+
+    this.isPlaying = false;
+
+    const stationEl =
+      document.getElementById('radio-station-name');
+
+    if (stationEl) {
+      stationEl.textContent = station.name;
+    }
+
+    this.renderNowPlaying();
+    this.updatePlayButton();
+
+    if (wasPlaying && this.currentTrack?.audioUrl) {
+      this.play();
+    }
   },
 };
 
@@ -1788,7 +2001,10 @@ const UI = {
 
     document.getElementById('radio-toggle').addEventListener('click', () =>
       document.getElementById('radio-panel').classList.toggle('hidden'));
-    document.getElementById('radio-play-btn').addEventListener('click', () => RadioSystem.play());
+    document.getElementById('radio-play-btn').addEventListener(
+  'click',
+  () => RadioSystem.togglePlay()
+);
     document.getElementById('radio-next-btn').addEventListener('click', () => RadioSystem.nextTrack());
     document.getElementById('radio-mute-btn').addEventListener('click', () => RadioSystem.toggleMute());
 
