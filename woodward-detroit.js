@@ -1986,63 +1986,201 @@ const Garage = {
 
 const UI = {
   init() {
-    document.getElementById('progress-toggle').addEventListener('click', () =>
-      document.getElementById('progress-panel').classList.toggle('hidden'));
-    document.querySelectorAll('[data-close]').forEach((btn) =>
-      btn.addEventListener('click', () => document.getElementById(btn.dataset.close).classList.add('hidden')));
+    // Safely attach an event listener without crashing the entire UI
+    // if an optional element is missing.
+    const on = (id, event, handler) => {
+      const el = document.getElementById(id);
 
-    document.getElementById('discovery-continue').addEventListener('click', () => DiscoverySystem.continueDrive());
+      if (!el) {
+        console.warn(`UI element not found: #${id}`);
+        return;
+      }
 
-    document.getElementById('store-continue').addEventListener('click', () => StoreSystem.continueDrive());
-    document.getElementById('store-item-list').addEventListener('click', (e) => {
+      el.addEventListener(event, handler);
+    };
+
+    // -----------------------------------------------------------------------
+    // PROGRESS
+    // -----------------------------------------------------------------------
+
+    on('progress-toggle', 'click', () => {
+      document.getElementById('progress-panel')?.classList.toggle('hidden');
+    });
+
+    // -----------------------------------------------------------------------
+    // CLOSE BUTTONS
+    // -----------------------------------------------------------------------
+
+    document.querySelectorAll('[data-close]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.dataset.close);
+
+        if (target) {
+          target.classList.add('hidden');
+        }
+      });
+    });
+
+    // -----------------------------------------------------------------------
+    // DISCOVERY
+    // -----------------------------------------------------------------------
+
+    on('discovery-continue', 'click', () => {
+      DiscoverySystem.continueDrive();
+    });
+
+    // -----------------------------------------------------------------------
+    // STORE
+    // -----------------------------------------------------------------------
+
+    on('store-continue', 'click', () => {
+      StoreSystem.continueDrive();
+    });
+
+    on('store-item-list', 'click', (e) => {
       const btn = e.target.closest('.store-buy-btn');
-      if (btn && !btn.disabled) StoreSystem.buy(btn.dataset.itemId);
+
+      if (btn && !btn.disabled) {
+        StoreSystem.buy(btn.dataset.itemId);
+      }
     });
 
-    document.getElementById('radio-toggle').addEventListener('click', () =>
-      document.getElementById('radio-panel').classList.toggle('hidden'));
-    document.getElementById('radio-play-btn').addEventListener(
-  'click',
-  () => RadioSystem.togglePlay()
-);
-    document.getElementById('radio-next-btn').addEventListener('click', () => RadioSystem.nextTrack());
-    document.getElementById('radio-mute-btn').addEventListener('click', () => RadioSystem.toggleMute());
+    // -----------------------------------------------------------------------
+    // RADIO
+    // -----------------------------------------------------------------------
 
-    document.getElementById('performance-btn').addEventListener('click', () => PerformanceSystem.start());
-    document.getElementById('results-continue').addEventListener('click', () => PerformanceSystem.closeResults());
+    on('radio-toggle', 'click', () => {
+      document.getElementById('radio-panel')?.classList.toggle('hidden');
+    });
 
-    document.getElementById('map-toggle').addEventListener('click', () => {
+    on('radio-play-btn', 'click', () => {
+      RadioSystem.togglePlay();
+    });
+
+    on('radio-next-btn', 'click', () => {
+      RadioSystem.nextTrack();
+    });
+
+    on('radio-mute-btn', 'click', () => {
+      RadioSystem.toggleMute();
+    });
+
+    // Optional Tune button
+    on('radio-tune-btn', 'click', () => {
+      const stations = currentCity.radioStations || [];
+
+      if (!stations.length) return;
+
+      const currentIndex = stations.findIndex(
+        (station) => station.id === RadioSystem.currentStation?.id
+      );
+
+      const nextIndex =
+        currentIndex < 0
+          ? 0
+          : (currentIndex + 1) % stations.length;
+
+      RadioSystem.tune(stations[nextIndex].id);
+    });
+
+    // -----------------------------------------------------------------------
+    // PERFORMANCE
+    // -----------------------------------------------------------------------
+
+    on('performance-btn', 'click', () => {
+      PerformanceSystem.start();
+    });
+
+    on('results-continue', 'click', () => {
+      PerformanceSystem.closeResults();
+    });
+
+    // -----------------------------------------------------------------------
+    // MAP
+    // -----------------------------------------------------------------------
+
+    on('map-toggle', 'click', () => {
       CityProgression.render();
-      document.getElementById('city-select-overlay').classList.remove('hidden');
+
+      document
+        .getElementById('city-select-overlay')
+        ?.classList.remove('hidden');
     });
-    document.getElementById('garage-toggle').addEventListener('click', () => {
+
+    // -----------------------------------------------------------------------
+    // GARAGE
+    // -----------------------------------------------------------------------
+
+    on('garage-toggle', 'click', () => {
       Garage.render();
-      document.getElementById('garage-overlay').classList.remove('hidden');
+
+      document
+        .getElementById('garage-overlay')
+        ?.classList.remove('hidden');
     });
-    document.getElementById('garage-save-btn').addEventListener('click', () => Garage.save());
-    document.getElementById('plate-input').addEventListener('input', (e) => {
-      document.getElementById('plate-preview').textContent =
-        (e.target.value || 'DETROIT').toUpperCase().slice(0, 8);
+
+    on('garage-save-btn', 'click', () => {
+      Garage.save();
     });
+
+    on('plate-input', 'input', (e) => {
+      const preview = document.getElementById('plate-preview');
+
+      if (preview) {
+        preview.textContent =
+          (e.target.value || 'DETROIT')
+            .toUpperCase()
+            .slice(0, 8);
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // ORIENTATION
+    // -----------------------------------------------------------------------
 
     this.checkOrientation();
-    window.addEventListener('resize', () => this.checkOrientation());
+
+    window.addEventListener('resize', () => {
+      this.checkOrientation();
+    });
+
+    console.log('WOODWARD UI INITIALIZED');
   },
 
   checkOrientation() {
     const hint = document.getElementById('rotate-hint');
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const isSmallScreen = window.innerWidth < 900;
-    if (isPortrait && isSmallScreen) hint.classList.remove('hidden');
-    else hint.classList.add('hidden');
+
+    if (!hint) return;
+
+    const isPortrait =
+      window.innerHeight > window.innerWidth;
+
+    const isSmallScreen =
+      window.innerWidth < 900;
+
+    if (isPortrait && isSmallScreen) {
+      hint.classList.remove('hidden');
+    } else {
+      hint.classList.add('hidden');
+    }
   },
 
   showToast(kicker, title) {
     const toast = document.getElementById('toast');
-    toast.innerHTML = `<span class="toast-kicker">${kicker}</span><span class="toast-title">${title}</span>`;
+
+    if (!toast) return;
+
+    toast.innerHTML =
+      `<span class="toast-kicker">${kicker}</span>` +
+      `<span class="toast-title">${title}</span>`;
+
     toast.classList.remove('hidden');
+
     clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => toast.classList.add('hidden'), 3600);
+
+    this._toastTimer = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3600);
   },
 };
 
