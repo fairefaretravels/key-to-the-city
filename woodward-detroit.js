@@ -1174,21 +1174,29 @@ const DiscoverySystem = {
   },
 
   continueDrive() {
-    document.getElementById('discovery-overlay').classList.add('hidden');
-    this.active = false;
-    Vehicle.frozen = false;
+  const overlay = document.getElementById('discovery-overlay');
 
-    const landmark = this._pendingLandmark;
-    this._pendingLandmark = null;
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
 
-    if (landmark && landmark.id === 'penobscot') {
-      UI.showToast('DESTINATION UNLOCKED', 'HART PLAZA — your first Detroit performance has been unlocked.');
-    }
-    if (landmark && landmark.performanceLocation) {
-      PerformanceSystem.trigger(landmark);
-    }
-  },
-};
+  this.active = false;
+  Vehicle.frozen = false;
+
+  const landmark = this._pendingLandmark;
+  this._pendingLandmark = null;
+
+  if (landmark && landmark.id === 'penobscot') {
+    UI.showToast(
+      'DESTINATION UNLOCKED',
+      'HART PLAZA — your first Detroit performance has been unlocked.'
+    );
+  }
+
+  if (landmark && landmark.performanceLocation) {
+    PerformanceSystem.trigger(landmark);
+  }
+},
 
 /* ============================================================================
    8B. STORE SYSTEM
@@ -1290,12 +1298,16 @@ const StoreSystem = {
   },
 
   continueDrive() {
-    document.getElementById('store-overlay').classList.add('hidden');
-    this.active = false;
-    this._current = null;
-    Vehicle.frozen = false;
-  },
-};
+  const overlay = document.getElementById('store-overlay');
+
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
+
+  this.active = false;
+  this._current = null;
+  Vehicle.frozen = false;
+},
 
 /* ============================================================================
    8C. COIN SYSTEM
