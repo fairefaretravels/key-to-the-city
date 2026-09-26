@@ -51,7 +51,7 @@ const SONG_LIBRARY = {
       artist: 'Lavelle feat The Switchblades',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
+      audioUrl: './assets/music/Lavelle feat The Switchblades - Collect The Vibe .mp3'
     },
     {
       id: 'alternative-1',
@@ -59,7 +59,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/4-x-4.mp3'
+      audioUrl: './assets/music/4-x-4.mp3'
     },
     {
       id: 'alternative-2',
@@ -67,7 +67,7 @@ const SONG_LIBRARY = {
       artist: 'AL LUV FT SWITCHBLADES',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
+      audioUrl: './assets/music/AL LUV FT SWITCHBLADES - THROWBACK.mp3'
     },
     {
       id: 'alternative-3',
@@ -75,7 +75,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/ALL DAT ASS.mp3'
+      audioUrl: './assets/music/ALL DAT ASS.mp3'
     },
     {
       id: 'alternative-4',
@@ -83,7 +83,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Alexa (Remastered).mp3'
+      audioUrl: './assets/music/Alexa (Remastered).mp3'
     },
     {
       id: 'alternative-5',
@@ -91,7 +91,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/All I have In This World.mp3'
+      audioUrl: './assets/music/All I have In This World.mp3'
     },
     {
       id: 'alternative-6',
@@ -99,7 +99,7 @@ const SONG_LIBRARY = {
       artist: '',
       genre: 'alternative',
       bpm: null,
-      audioUrl: '/assets/music/Disclaimer.mp3'
+      audioUrl: './assets/music/Disclaimer.mp3'
     }
   ],
 
